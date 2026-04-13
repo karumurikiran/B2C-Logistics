@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, User, Truck, List, CreditCard, Users, Clock, CalendarX, Plus, Trash2 } from 'lucide-react';
+import { Settings as SettingsIcon, User, Truck, List, CreditCard, Users, Clock, CalendarX, Plus, Trash2, RotateCcw, Save, Star, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from '../ui/input';
+import { MultiSelect } from '../ui/multi-select';
+import { toast } from 'sonner';
 
 const warehouseAddresses = [
   {
@@ -217,8 +219,11 @@ export function SettingsPage() {
             </div>
           )}
 
+          {/* Delivery Tab */}
+          {activeTab === 'delivery' && <DeliveryTab />}
+
           {/* Other tabs placeholder */}
-          {activeTab !== 'profile' && (
+          {activeTab !== 'profile' && activeTab !== 'delivery' && (
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-2">
                 {tabs.find(t => t.id === activeTab)?.label}
@@ -229,6 +234,325 @@ export function SettingsPage() {
             </div>
           )}
         </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   Delivery Tab
+───────────────────────────────────────────── */
+const exclusionsData = [
+  { id: 1, sno: 1, fieldName: 'UID', value: '1234', status: 'Inactive' },
+  { id: 2, sno: 2, fieldName: 'DsType', value: 'Anjiswar', status: 'Active' },
+];
+
+function DeliveryTab() {
+  const [routeConfig, setRouteConfig] = useState({
+    serviceTime: '12',
+    maxTravelTime: '8.5',
+    maxStops: '30',
+    maxDistance: '50',
+  });
+  const [ondcCategory, setOndcCategory] = useState('Grocery');
+  const [preferredProviders, setPreferredProviders] = useState<string[]>([]);
+  const [savedProviders, setSavedProviders] = useState<string[]>([]);
+
+  const providerOptions = [
+    { label: 'All', value: 'all' },
+    { label: 'Prorouting', value: 'prorouting' },
+    { label: 'ONDC Pramaaan Logistics', value: 'ondc' },
+    { label: 'Delhivery', value: 'delhivery' },
+    { label: 'Blue Dart', value: 'bluedart' },
+  ];
+
+  const handleSaveProviders = () => {
+    if (preferredProviders.length === 0) {
+      toast.error('Please select at least one provider before saving.');
+      return;
+    }
+    setSavedProviders(preferredProviders);
+    const labels = preferredProviders.map(v => providerOptions.find(o => o.value === v)?.label).filter(Boolean).join(', ');
+    toast.success(`Preferred providers saved: ${labels}`);
+  };
+  const [exclusions, setExclusions] = useState(exclusionsData);
+
+  const handleDeleteExclusion = (id: number) => {
+    setExclusions(prev => prev.filter(e => e.id !== id));
+  };
+
+  const handleResetDefaults = () => {
+    setRouteConfig({ serviceTime: '12', maxTravelTime: '8.5', maxStops: '30', maxDistance: '50' });
+  };
+
+  return (
+    <div className="space-y-6">
+
+      {/* Route Planning Configuration */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-base font-semibold text-gray-900">Route Planning Configuration</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={handleResetDefaults}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reset Defaults
+            </button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 text-white rounded-md text-sm hover:bg-gray-900">
+              <Save className="w-3.5 h-3.5" />
+              Save
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          {/* Service Time per Stop */}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-4 h-4 text-indigo-500" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Service Time per Stop</p>
+                <p className="text-xs text-gray-500">Time spent at each delivery point</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={routeConfig.serviceTime}
+                onChange={e => setRouteConfig(p => ({ ...p, serviceTime: e.target.value }))}
+                className="w-20 text-center font-semibold"
+              />
+              <span className="text-sm text-gray-500">minutes</span>
+            </div>
+          </div>
+
+          {/* Max Travel Time */}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                <Truck className="w-4 h-4 text-indigo-500" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Max Travel Time</p>
+                <p className="text-xs text-gray-500">Maximum travel time per route</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={routeConfig.maxTravelTime}
+                onChange={e => setRouteConfig(p => ({ ...p, maxTravelTime: e.target.value }))}
+                className="w-20 text-center font-semibold"
+              />
+              <span className="text-sm text-gray-500">hours</span>
+            </div>
+          </div>
+
+          {/* Max Stops per Vehicle */}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Max Stops per Vehicle</p>
+                <p className="text-xs text-gray-500">Maximum delivery stops per route</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={routeConfig.maxStops}
+                onChange={e => setRouteConfig(p => ({ ...p, maxStops: e.target.value }))}
+                className="w-20 text-center font-semibold"
+              />
+              <span className="text-sm text-gray-500">stops</span>
+            </div>
+          </div>
+
+          {/* Max Distance */}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Max Distance</p>
+                <p className="text-xs text-gray-500">Maximum delivery distance per route</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={routeConfig.maxDistance}
+                onChange={e => setRouteConfig(p => ({ ...p, maxDistance: e.target.value }))}
+                className="w-20 text-center font-semibold"
+              />
+              <span className="text-sm text-gray-500">km</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ONDC Search Configuration */}
+      <div className="bg-white border border-gray-200 rounded-lg p-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+              <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">ONDC Search Configuration</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Controls the product category sent during <strong>Search Vehicles</strong> requests to the ONDC network.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <select
+              value={ondcCategory}
+              onChange={e => setOndcCategory(e.target.value)}
+              className="border border-gray-300 rounded-md px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option>Grocery</option>
+              <option>Electronics</option>
+              <option>Apparel</option>
+              <option>Food</option>
+            </select>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 text-white rounded-md text-sm hover:bg-gray-900">
+              <Save className="w-3.5 h-3.5" />
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Preferred Providers */}
+      <div className="bg-white border border-gray-200 rounded-lg p-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+              <Star className="w-4 h-4 text-gray-500" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Preferred Providers</p>
+              <p className="text-xs text-gray-500 mt-0.5">Select your preferred logistics provider for delivery assignments.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-64">
+              <MultiSelect
+                options={providerOptions}
+                value={preferredProviders}
+                onChange={setPreferredProviders}
+                placeholder="Select providers..."
+              />
+            </div>
+            <button
+              onClick={handleSaveProviders}
+              className="flex items-center gap-1.5 px-4 py-1.5 bg-gray-900 text-white rounded-md text-sm font-medium hover:bg-gray-800 whitespace-nowrap"
+            >
+              <Save className="w-3.5 h-3.5" />
+              Save
+            </button>
+          </div>
+        </div>
+        {savedProviders.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-500 font-medium">Saved:</span>
+            {savedProviders.map(v => {
+              const label = providerOptions.find(o => o.value === v)?.label;
+              return (
+                <span key={v} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  {label}
+                </span>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Exclusions */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-base font-semibold text-gray-900">Exclusions</h2>
+          <button className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800">
+            <Plus className="w-4 h-4" />
+            Add Exclusion
+          </button>
+        </div>
+
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-200">
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 pr-4">S NO</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 pr-4">Field Name</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 pr-4">Value</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 pr-4">Status</th>
+              <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {exclusions.map(row => (
+              <tr key={row.id} className="hover:bg-gray-50">
+                <td className="py-4 pr-4 text-sm text-gray-700">{row.sno}</td>
+                <td className="py-4 pr-4 text-sm text-gray-900">{row.fieldName}</td>
+                <td className="py-4 pr-4 text-sm text-gray-700">{row.value}</td>
+                <td className="py-4 pr-4">
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                    row.status === 'Active'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-600'
+                  }`}>
+                    {row.status}
+                  </span>
+                </td>
+                <td className="py-4 text-right">
+                  <div className="flex items-center justify-end gap-3">
+                    <button className="text-[#2D6EF5] hover:text-blue-700">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteExclusion(row.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
+          <span className="text-sm text-gray-500">Rows per page:</span>
+          <select className="border border-gray-300 rounded px-2 py-1 text-sm text-gray-700">
+            <option>25</option>
+            <option>50</option>
+            <option>100</option>
+          </select>
+          <span className="text-sm text-gray-500">1–{exclusions.length} of {exclusions.length}</span>
+          <button className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30" disabled>
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30" disabled>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
     </div>
   );
 }
