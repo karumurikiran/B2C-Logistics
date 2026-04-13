@@ -1,0 +1,107 @@
+import { X, ChevronDown, Calendar } from 'lucide-react';
+import { Button } from './ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
+
+interface TripFiltersDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  pickupDate: string;
+  status: string;
+  onPickupDateChange: (date: string) => void;
+  onStatusChange: (status: string) => void;
+  onClearAll: () => void;
+  onApplyFilters: () => void;
+}
+
+export function TripFiltersDialog({
+  isOpen,
+  onClose,
+  pickupDate,
+  status,
+  onPickupDateChange,
+  onStatusChange,
+  onClearAll,
+  onApplyFilters,
+}: TripFiltersDialogProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-8 py-5 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-900">Trip Filters</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Content - Two Column Layout */}
+        <div className="px-8 py-8">
+          <div className="grid grid-cols-2 gap-6">
+            {/* Pickup Date */}
+            <div className="space-y-3">
+              <label className="text-base font-semibold text-gray-900 block">
+                Pickup Date
+              </label>
+              <div className="relative">
+                <input
+                  type="date"
+                  value={pickupDate}
+                  onChange={(e) => onPickupDateChange(e.target.value)}
+                  className="w-full h-12 px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D6EF5] focus:border-transparent text-gray-900 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 hover:[&::-webkit-calendar-picker-indicator]:opacity-100"
+                  placeholder="dd/mm/yyyy"
+                />
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="space-y-3">
+              <label className="text-base font-semibold text-gray-900 block">
+                Status
+              </label>
+              <Select value={status} onValueChange={onStatusChange}>
+                <SelectTrigger className="w-full h-12 border-gray-300 rounded-lg">
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All</SelectItem>
+                  <SelectItem value="Planned">Planned</SelectItem>
+                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="Completed">Completed</SelectItem>
+                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-center gap-4 px-8 py-6 border-t border-gray-200">
+          <Button
+            variant="outline"
+            onClick={onClearAll}
+            className="px-8 py-2.5 text-base font-medium text-gray-700 bg-white border-gray-300 hover:bg-gray-50 rounded-lg h-12"
+          >
+            Clear All
+          </Button>
+          <Button
+            onClick={onApplyFilters}
+            className="px-8 py-2.5 text-base font-medium bg-[#2D6EF5] hover:bg-[#2557D6] text-white rounded-lg h-12"
+          >
+            Apply Filters
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
