@@ -6,6 +6,7 @@ import { OrdersPage } from './components/pages/OrdersPage';
 import { CreateOrderPage } from './components/pages/CreateOrderPage';
 import { DeliveryPlanningPage } from './components/pages/DeliveryPlanningPage';
 import { TripsPage } from './components/pages/TripsPage';
+import type { Trip } from './components/pages/TripsPage';
 import { ReportsPage } from './components/pages/ReportsPage';
 import { CustomersPage } from './components/pages/CustomersPage';
 import { SettingsPage } from './components/pages/SettingsPage';
@@ -29,6 +30,7 @@ export default function App() {
   const [selectedOrdersForRoute, setSelectedOrdersForRoute] = useState<Order[]>([]);
   const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<Order | MergedOrder | null>(null);
   const [allOrders, setAllOrders] = useState<(Order | MergedOrder)[]>([]);
+  const [confirmedTrips, setConfirmedTrips] = useState<Trip[]>([]);
 
   const renderPage = () => {
     if (selectedOrderForDetails) {
@@ -36,6 +38,11 @@ export default function App() {
         <OrderDetailsPage
           order={selectedOrderForDetails}
           onBack={() => setSelectedOrderForDetails(null)}
+          onBookingConfirmed={(trip) => {
+            setConfirmedTrips(prev => [trip as Trip, ...prev]);
+            setSelectedOrderForDetails(null);
+            setActiveMenuItem('trips');
+          }}
         />
       );
     }
@@ -84,9 +91,16 @@ export default function App() {
           />
         );
       case 'delivery':
-        return <DeliveryPlanningPage />;
+        return (
+          <DeliveryPlanningPage
+            onTripsCreated={(trips) => {
+              setConfirmedTrips(prev => [...trips, ...prev]);
+              setActiveMenuItem('trips');
+            }}
+          />
+        );
       case 'trips':
-        return <TripsPage />;
+        return <TripsPage extraTrips={confirmedTrips} />;
       case 'reports':
         return <ReportsPage />;
       case 'customers':

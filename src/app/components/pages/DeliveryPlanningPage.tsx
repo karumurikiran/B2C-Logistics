@@ -1,9 +1,8 @@
-import { Truck, Calendar, Hash, MapPin, Weight, Clock, Wrench, Download, Eye, Map } from 'lucide-react';
+import { Truck, Calendar, Hash, MapPin, Weight, Clock, Wrench, Download, Eye } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Pagination } from '../Pagination';
 import { useState } from 'react';
 import { CreateDeliveryRoutePage } from './CreateDeliveryRoutePage';
-import { MapViewModal } from '../MapViewModal';
 import { MarkDeliveredDialog } from '../MarkDeliveredDialog';
 import { Order as OrderType } from '../OrdersTable';
 
@@ -379,11 +378,14 @@ interface Order {
   totalVolWeight: number;
 }
 
-export function DeliveryPlanningPage() {
+interface DeliveryPlanningPageProps {
+  onTripsCreated?: (trips: any[]) => void;
+}
+
+export function DeliveryPlanningPage({ onTripsCreated }: DeliveryPlanningPageProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [showCreateRoute, setShowCreateRoute] = useState(false);
-  const [mapViewOpen, setMapViewOpen] = useState(false);
   const [markDeliveredOpen, setMarkDeliveredOpen] = useState(false);
   const [orderToMarkDelivered, setOrderToMarkDelivered] = useState<OrderType | null>(null);
   const [deliveryRoutes, setDeliveryRoutes] = useState<DeliveryRoute[]>([
@@ -492,17 +494,16 @@ export function DeliveryPlanningPage() {
     setOrderToMarkDelivered(null);
   };
 
-  const handleCreateRouteFromMap = (selectedOrders: OrderType[]) => {
-    setMapViewOpen(false);
-    setShowCreateRoute(true);
-  };
-
   // If showing create route, render it instead of the main page
   if (showCreateRoute) {
     return (
-      <CreateDeliveryRoutePage 
+      <CreateDeliveryRoutePage
         onBack={handleCloseCreateRoute}
         onConfirm={handleConfirmRoute}
+        onTripsCreated={(trips) => {
+          setShowCreateRoute(false);
+          if (onTripsCreated) onTripsCreated(trips);
+        }}
       />
     );
   }
@@ -523,14 +524,6 @@ export function DeliveryPlanningPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button 
-            onClick={() => setMapViewOpen(true)} 
-            className="gap-2 bg-[#2D6EF5] hover:bg-[#2557D6]"
-            disabled={initialOrders.length === 0}
-          >
-            <Map className="w-4 h-4" />
-            Map View
-          </Button>
           <Button className="gap-2 bg-[#2D6EF5] hover:bg-[#2557D6]" onClick={handleCreateRouteClick}>
             <Download className="w-4 h-4" />
             Create Delivery Route
@@ -636,13 +629,6 @@ export function DeliveryPlanningPage() {
       </div>
 
       {/* Modals */}
-      <MapViewModal
-        open={mapViewOpen}
-        onClose={() => setMapViewOpen(false)}
-        orders={initialOrders}
-        onSelectOrder={handleSelectOrder}
-        onCreateRoute={handleCreateRouteFromMap}
-      />
       <MarkDeliveredDialog
         open={markDeliveredOpen}
         onOpenChange={setMarkDeliveredOpen}

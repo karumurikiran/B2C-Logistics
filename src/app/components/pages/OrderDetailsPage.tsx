@@ -1,4 +1,4 @@
-import { ArrowLeft, User, Package, Truck, Calendar, MapPin, Phone, DollarSign, Hash, Clock, FileText, Search } from "lucide-react";
+import { ArrowLeft, User, Package, Truck, Calendar, MapPin, Phone, DollarSign, Hash, Clock, FileText, Search, CheckCircle2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import type { Order } from "../OrdersTable";
@@ -43,6 +43,9 @@ const availableVehicles = [
   },
 ];
 
+// Sort by price ascending; cheapest = best price
+const sortedVehicles = [...availableVehicles].sort((a, b) => a.price - b.price);
+
 function CountdownTimer({ seconds }: { seconds: number }) {
   const [timeLeft, setTimeLeft] = useState(seconds);
   useEffect(() => {
@@ -60,16 +63,53 @@ function CountdownTimer({ seconds }: { seconds: number }) {
   );
 }
 
+export interface ConfirmedTrip {
+  id: string;
+  tripNumber: string;
+  provider: string;
+  sla: string;
+  status: string;
+  dropPoints: number;
+  arrivalTime: string;
+  charges: string;
+}
+
 interface OrderDetailsPageProps {
   order: Order | MergedOrder;
   onBack: () => void;
+  onBookingConfirmed?: (trip: ConfirmedTrip) => void;
 }
 
-export function OrderDetailsPage({ order, onBack }: OrderDetailsPageProps) {
+export function OrderDetailsPage({ order, onBack, onBookingConfirmed }: OrderDetailsPageProps) {
   const [activeTab, setActiveTab] = useState<"summary" | "products" | "suborders">("summary");
   const [showVehicles, setShowVehicles] = useState(false);
+  const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
 
   const isMergedOrder = 'isMerged' in order && order.isMerged;
+
+  const selectedVehicle = sortedVehicles.find(v => v.id === selectedVehicleId);
+
+  const handleConfirmBooking = () => {
+    if (!selectedVehicle || !onBookingConfirmed) return;
+    const now = new Date();
+    const pad = (n: number, len = 2) => String(n).padStart(len, '0');
+    const ts = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const tripNumber = `Q-${ts}-${rand}`;
+
+    const trip: ConfirmedTrip = {
+      id: tripNumber,
+      tripNumber,
+      provider: selectedVehicle.name,
+      sla: selectedVehicle.category,
+      status: 'Planned',
+      dropPoints: 1,
+      arrivalTime: selectedVehicle.estDelivery,
+      charges: `₹ ${selectedVehicle.price.toFixed(2)}`,
+    };
+
+    onBookingConfirmed(trip);
+  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { bg: string; text: string }> = {
@@ -339,7 +379,7 @@ export function OrderDetailsPage({ order, onBack }: OrderDetailsPageProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {(order as MergedOrder).subOrders.map((subOrder, index) => (
+                  {(order as MergedOrder).subOrders.map((subOrder) => (
                     <tr key={subOrder.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">
                         {subOrder.invoiceNumber || 'N/A'}
@@ -395,41 +435,78 @@ export function OrderDetailsPage({ order, onBack }: OrderDetailsPageProps) {
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
-              {availableVehicles.map((vehicle) => (
-                <div
-                  key={vehicle.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:border-[#2D6EF5] hover:bg-blue-50 cursor-pointer transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <span className="text-sm font-semibold text-gray-900">{vehicle.name}</span>
-                    <CountdownTimer seconds={280} />
+              {sortedVehicles.map((vehicle, index) => {
+                const isSelected = selectedVehicleId === vehicle.id;
+                const isBestPrice = index === 0;
+                return (
+                  <div
+                    key={vehicle.id}
+                    onClick={() => setSelectedVehicleId(vehicle.id)}
+                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                      isSelected
+                        ? 'border-[#2D6EF5] bg-blue-50'
+                        : 'border-gray-200 hover:border-[#2D6EF5] hover:bg-blue-50'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-gray-900">{vehicle.name}</span>
+                        {isBestPrice && (
+                          <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded">
+                            Best Price
+                          </span>
+                        )}
+                      </div>
+                      <CountdownTimer seconds={280} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Category</span>
+                        <span className="text-xs text-gray-700">{vehicle.category}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Price</span>
+                        <span className="text-sm font-semibold text-green-600">
+                          ₹ {vehicle.price.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Est. Delivery</span>
+                        <span className="text-xs text-[#2D6EF5] font-medium">{vehicle.estDelivery}</span>
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <div className="mt-3 flex items-center gap-1.5 text-[#2D6EF5] text-xs font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Selected
+                      </div>
+                    )}
                   </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Category</span>
-                      <span className="text-xs text-gray-700">{vehicle.category}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Price</span>
-                      <span className="text-sm font-semibold text-green-600">
-                        ₹ {vehicle.price.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Est. Delivery</span>
-                      <span className="text-xs text-[#2D6EF5] font-medium">{vehicle.estDelivery}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            <div className="p-3 border-t border-gray-200">
+            <div className="p-3 border-t border-gray-200 space-y-2">
+              {selectedVehicleId ? (
+                <Button
+                  onClick={handleConfirmBooking}
+                  className="w-full py-2 text-sm bg-[#2D6EF5] hover:bg-[#2557D6] text-white rounded-lg font-medium"
+                >
+                  Confirm Booking
+                </Button>
+              ) : (
+                <Button
+                  disabled
+                  className="w-full py-2 text-sm bg-gray-200 text-gray-500 rounded-lg font-medium cursor-not-allowed"
+                >
+                  Select a Provider to Continue
+                </Button>
+              )}
               <button
-                onClick={() => setShowVehicles(false)}
+                onClick={() => { setShowVehicles(false); setSelectedVehicleId(null); }}
                 className="w-full py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Cancel Search
+                Cancel
               </button>
             </div>
           </div>

@@ -104,8 +104,12 @@ const mockTrips: Trip[] = [
   },
 ];
 
-export function TripsPage() {
-  const [trips] = useState<Trip[]>(mockTrips);
+interface TripsPageProps {
+  extraTrips?: Trip[];
+}
+
+export function TripsPage({ extraTrips = [] }: TripsPageProps) {
+  const trips = React.useMemo(() => [...extraTrips, ...mockTrips], [extraTrips]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
