@@ -517,58 +517,119 @@ export function TripDetailsPage({ tripId, trip, onBack }: TripDetailsPageProps) 
         {/* ── CUSTOMER WISE TAB ── */}
         {activeTab === 'customer-wise' && (
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-200">
-              <h2 className="text-base font-bold text-gray-900">Customer Wise Orders</h2>
-              <p className="text-sm text-gray-500 mt-0.5">{dropPoints} customer{dropPoints !== 1 ? 's' : ''} in this trip</p>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {deliveryPoints.map((point) => (
-                <div key={point.id} className="px-5 py-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className={`w-8 h-8 rounded-full ${stopCircleColor(point.status)} text-white flex items-center justify-center font-bold text-xs flex-shrink-0`}>
-                        {point.stopNumber}
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-bold text-gray-900">{point.storeName}</h3>
-                        <div className="flex items-center gap-3 mt-0.5">
-                          <span className="text-xs text-gray-500 flex items-center gap-1">
-                            <User className="w-3 h-3" />{point.contactPerson}
-                          </span>
-                          <span className="text-xs text-gray-500 flex items-center gap-1">
-                            <Phone className="w-3 h-3" />{point.phone}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1 flex items-start gap-1">
-                          <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />{point.address}
-                        </p>
-                      </div>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="px-4 py-3 text-left">
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-xs font-bold text-gray-500">#</span>
+                      <span className="text-xs font-bold text-gray-500">STOP NO.</span>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="text-sm font-bold text-gray-900">₹ {point.invoiceValue.toFixed(2)}</div>
-                      <div className="text-xs text-gray-500 mt-0.5">{point.invoiceNumber}</div>
-                      <Badge className={`${statusBadgeClass(point.status)} rounded px-2 py-0.5 text-xs font-medium mt-1`}>
+                  </th>
+                  <th className="px-4 py-3 text-left">
+                    <div className="flex items-center gap-1">
+                      <User className="w-3.5 h-3.5 text-blue-500" />
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Customer Business Name</span>
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-left">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-blue-500" />
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Address</span>
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-left">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">OTP</span>
+                  </th>
+                  <th className="px-4 py-3 text-left">
+                    <div className="flex items-center gap-1">
+                      <span className="w-3.5 h-3.5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[9px] font-bold flex-shrink-0">i</span>
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Status</span>
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-left">
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-blue-500" />
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Delivered Time</span>
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-left">
+                    <div className="flex items-center gap-1">
+                      <IndianRupee className="w-3.5 h-3.5 text-blue-500" />
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Orders/Amount</span>
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-left">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {deliveryPoints.map((point) => (
+                  <tr key={point.id} className="hover:bg-gray-50 transition-colors">
+                    {/* Stop No */}
+                    <td className="px-4 py-3 text-sm font-medium text-gray-700 w-12 text-center">
+                      {point.stopNumber}
+                    </td>
+                    {/* Customer Business Name */}
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-medium text-gray-900">{point.storeName}</span>
+                    </td>
+                    {/* Address */}
+                    <td className="px-4 py-3 max-w-[220px]">
+                      <span className="text-sm text-gray-600 leading-relaxed">{point.address}</span>
+                    </td>
+                    {/* OTP */}
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-medium text-gray-900">{point.otp}</span>
+                    </td>
+                    {/* Status */}
+                    <td className="px-4 py-3">
+                      <span className={`inline-block px-2.5 py-1 rounded text-xs font-medium ${statusBadgeClass(point.status)}`}>
                         {point.status}
-                      </Badge>
-                      <div className={`text-xs mt-1 px-1.5 py-0.5 rounded font-medium inline-block ${
-                        point.paymentMode === 'COD'     ? 'bg-orange-100 text-orange-700' :
-                        point.paymentMode === 'Digital' ? 'bg-blue-100 text-blue-700'   :
-                                                          'bg-purple-100 text-purple-700'
-                      }`}>{point.paymentMode}</div>
+                      </span>
+                    </td>
+                    {/* Delivered Time */}
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-gray-500">
+                        {point.status === 'Delivered' || point.status === 'Partially Returned'
+                          ? point.timestamp
+                          : 'N/A'}
+                      </span>
+                    </td>
+                    {/* Orders / Amount */}
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-medium text-gray-900">
+                        1/₹ {point.invoiceValue.toFixed(2)}
+                      </span>
+                    </td>
+                    {/* Actions */}
+                    <td className="px-4 py-3">
+                      <button className="w-8 h-8 flex items-center justify-center rounded-full border border-blue-200 text-blue-500 hover:bg-blue-50 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              {/* Totals footer */}
+              <tfoot>
+                <tr className="bg-gray-50 border-t border-gray-200">
+                  <td colSpan={6} className="px-4 py-3">
+                    <span className="text-sm font-medium text-gray-700">{dropPoints} customers · {deliveredPoints.length} delivered</span>
+                  </td>
+                  <td className="px-4 py-3" colSpan={2}>
+                    <div className="flex items-center gap-4 text-sm">
+                      <span className="text-gray-600">COD: <span className="font-bold text-gray-900">₹ {codTotal.toFixed(2)}</span></span>
+                      <span className="text-gray-600">Total: <span className="font-bold text-gray-900">₹ {totalSaleValue.toFixed(2)}</span></span>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {/* Totals row */}
-            <div className="px-5 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">{dropPoints} customers · {deliveredPoints.length} delivered</span>
-              <div className="flex items-center gap-6 text-sm">
-                <span className="text-gray-600">COD: <span className="font-bold text-gray-900">₹ {codTotal.toFixed(2)}</span></span>
-                <span className="text-gray-600">Digital: <span className="font-bold text-gray-900">₹ {digitalTotal.toFixed(2)}</span></span>
-                <span className="text-gray-600">Total: <span className="font-bold text-gray-900">₹ {totalSaleValue.toFixed(2)}</span></span>
-              </div>
-            </div>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
         )}
 
