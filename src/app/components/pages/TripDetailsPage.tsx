@@ -572,6 +572,9 @@ export function TripDetailsPage({ tripId, trip, onBack }: TripDetailsPageProps) 
     estimatedCompletion: '2026-02-24 03:56 PM',
     pickupOTP:           '9445',
     returnOTP:           '6088',
+    insuranceProvider:   'HDFC ERGO General Insurance',
+    transactionId:       `TXN-${tripId.slice(-8).toUpperCase()}`,
+    premiumAmount:       '₹ 320.00',
   };
 
   const tabs = [
@@ -680,6 +683,9 @@ export function TripDetailsPage({ tripId, trip, onBack }: TripDetailsPageProps) 
                   { icon: CreditCard,  label: 'COD Collection',        value: `₹ ${codTotal.toFixed(2)}` },
                   { icon: CreditCard,  label: 'Digital Collection',    value: `₹ ${digitalTotal.toFixed(2)}` },
                   { icon: CreditCard,  label: 'Net Collection',        value: `₹ ${(codTotal + digitalTotal).toFixed(2)}` },
+                  { icon: Package,     label: 'Insurance Provider',    value: tripData.insuranceProvider },
+                  { icon: CreditCard,  label: 'Transaction ID',        value: tripData.transactionId },
+                  { icon: IndianRupee, label: 'Premium Amount',        value: tripData.premiumAmount },
                 ].map(({ icon: Icon, label, value }) => (
                   <div key={label} className="flex items-center gap-3">
                     <Icon className="w-5 h-5 text-[#2D6EF5] flex-shrink-0" />
