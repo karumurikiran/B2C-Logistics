@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, Download, Truck, User, Phone, Users, Clock, MapPin, Package, CreditCard, IndianRupee, CheckCircle2, AlertCircle, ShoppingCart, ArrowUpRight, LayoutGrid } from 'lucide-react';
-import { Button } from '../ui/button';
+import { ChevronLeft, Truck, User, Phone, Users, Clock, MapPin, Package, CreditCard, IndianRupee, CheckCircle2, AlertCircle, ShoppingCart, ArrowUpRight, LayoutGrid } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import type { Trip } from './TripsPage';
 
@@ -595,29 +594,7 @@ export function TripDetailsPage({ tripId, trip, onBack }: TripDetailsPageProps) 
             </button>
             <div>
               <h1 className="text-xl font-bold text-gray-900">{tripData.tripNumber}</h1>
-              <p className="text-sm text-gray-500">
-                Provider: <span className="font-medium text-gray-700">{tripData.provider}</span>
-                <span className="mx-2">·</span>
-                <span className={`font-medium ${
-                  trip?.status === 'Completed' ? 'text-green-600' :
-                  trip?.status === 'In Progress' ? 'text-amber-600' :
-                  trip?.status === 'Planned' ? 'text-blue-600' : 'text-gray-600'
-                }`}>{trip?.status ?? 'Planned'}</span>
-                <span className="mx-2">·</span>
-                {dropPoints} drop point{dropPoints !== 1 ? 's' : ''}
-              </p>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button className="bg-[#2D6EF5] hover:bg-[#2557D6] text-white gap-2 text-sm">
-              <Download className="w-4 h-4" />Order Details
-            </Button>
-            <Button className="bg-[#2D6EF5] hover:bg-[#2557D6] text-white gap-2 text-sm">
-              <Download className="w-4 h-4" />Return Report
-            </Button>
-            <Button className="bg-[#2D6EF5] hover:bg-[#2557D6] text-white gap-2 text-sm">
-              <Download className="w-4 h-4" />Pickup List
-            </Button>
           </div>
         </div>
 
