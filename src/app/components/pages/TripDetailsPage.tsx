@@ -269,6 +269,17 @@ interface TripDetailsPageProps {
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
+function stopCircleColor(status: DeliveryPoint['status']) {
+  switch (status) {
+    case 'Delivered':          return 'bg-green-500';
+    case 'Order Picked Up':    return 'bg-blue-500';
+    case 'Partially Returned': return 'bg-red-500';
+    case 'In Transit':         return 'bg-amber-500';
+    case 'Pending':            return 'bg-gray-400';
+    default:                   return 'bg-gray-400';
+  }
+}
+
 function statusBadgeClass(status: DeliveryPoint['status']) {
   switch (status) {
     case 'Delivered':        return 'bg-green-100 text-green-700';
