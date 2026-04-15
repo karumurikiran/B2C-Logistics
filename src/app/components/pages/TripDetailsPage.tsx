@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, Download, Truck, User, Phone, Users, Clock, MapPin, Package, CreditCard, IndianRupee, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Download, Truck, User, Phone, Users, Clock, MapPin, Package, CreditCard, IndianRupee, CheckCircle2, AlertCircle, ShoppingCart, ArrowUpRight, LayoutGrid } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import type { Trip } from './TripsPage';
@@ -261,6 +261,255 @@ function generateDeliveryPoints(tripId: string, count: number): DeliveryPoint[] 
   return points;
 }
 
+// ─── Mock product pool for customer order detail ────────────────────────────
+interface OrderProduct {
+  name: string;
+  hsnCode: string;
+  cases: number;
+  upc: number;
+  pcs: number;
+  mrp: number;
+  packaging: string;
+  orderedQty: number;
+  returnQty: number;
+  netQty: number;
+  unitWeight: string;
+  taxable: number;
+}
+
+const MOCK_PRODUCTS: OrderProduct[] = [
+  { name: 'SF MOMS MAGIC CA GRN 28+4G_FBIMMCA28TB',          hsnCode: '0', cases: 0, upc: 180, pcs: 24,  mrp: 5.00,   packaging: 'box', orderedQty: 24, returnQty: 0, netQty: 24, unitWeight: '0.04 Kgs', taxable: 108.66 },
+  { name: 'SF MOMS MAGIC CA GRN 28+4G_FBIMMCA28TB',          hsnCode: '0', cases: 0, upc: 180, pcs: 12,  mrp: 5.00,   packaging: 'box', orderedQty: 12, returnQty: 0, netQty: 12, unitWeight: '0.04 Kgs', taxable: 54.33  },
+  { name: 'YIPPEE MAGICMSLNODLES72.6GSPRINKPR_FN1215TG',     hsnCode: '0', cases: 0, upc: 96,  pcs: 12,  mrp: 15.00,  packaging: 'box', orderedQty: 12, returnQty: 0, netQty: 12, unitWeight: '0.09 Kgs', taxable: 165.35 },
+  { name: 'SF MOMS MAGIC SHINESBUTTER 44G_FB4513010T',       hsnCode: '0', cases: 0, upc: 96,  pcs: 24,  mrp: 9.00,   packaging: 'box', orderedQty: 24, returnQty: 0, netQty: 24, unitWeight: '0.07 Kgs', taxable: 192.62 },
+  { name: 'SUNFEASTFANTASTIK CHOCOMELTZ RS200_FCH51122A',    hsnCode: '0', cases: 0, upc: 24,  pcs: 1,   mrp: 200.00, packaging: 'box', orderedQty: 1,  returnQty: 0, netQty: 1,  unitWeight: '0.47 Kgs', taxable: 176.36 },
+  { name: 'DARK FANTASYCKRSWISSROLLCHOCO21.6G_FBIDFSR23',    hsnCode: '0', cases: 0, upc: 288, pcs: 48,  mrp: 10.00,  packaging: 'box', orderedQty: 48, returnQty: 0, netQty: 48, unitWeight: '0.07 Kgs', taxable: 428.57 },
+  { name: 'DARK FANTASY CHOCO FILLS 20G MF PR_FB101005MF',  hsnCode: '0', cases: 0, upc: 200, pcs: 40,  mrp: 10.00,  packaging: 'box', orderedQty: 40, returnQty: 0, netQty: 40, unitWeight: '0.04 Kgs', taxable: 363.64 },
+  { name: 'HIDE & SEEK CHOCO CHIPS CLASSIC 100G',           hsnCode: '0', cases: 0, upc: 120, pcs: 20,  mrp: 30.00,  packaging: 'box', orderedQty: 20, returnQty: 0, netQty: 20, unitWeight: '0.10 Kgs', taxable: 254.24 },
+  { name: 'BRITANNIA GOOD DAY CASHEW 150G',                 hsnCode: '0', cases: 0, upc: 96,  pcs: 16,  mrp: 25.00,  packaging: 'box', orderedQty: 16, returnQty: 0, netQty: 16, unitWeight: '0.15 Kgs', taxable: 338.98 },
+  { name: 'PARLE G GOLD GLUCOSE BISCUITS 250G',             hsnCode: '0', cases: 0, upc: 200, pcs: 50,  mrp: 20.00,  packaging: 'box', orderedQty: 50, returnQty: 0, netQty: 50, unitWeight: '0.25 Kgs', taxable: 847.46 },
+];
+
+function generateProductsForCustomer(seed: number): OrderProduct[] {
+  const count = 5 + (seed % 5); // 5-9 products
+  const result: OrderProduct[] = [];
+  for (let i = 0; i < count; i++) {
+    result.push(MOCK_PRODUCTS[(seed + i * 3) % MOCK_PRODUCTS.length]);
+  }
+  return result;
+}
+
+// ─── Customer Order Detail sub-view ─────────────────────────────────────────
+function CustomerOrderDetail({ point, onBack }: { point: DeliveryPoint; onBack: () => void }) {
+  const seed = point.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const products = generateProductsForCustomer(seed);
+  const totalTaxable = products.reduce((s, p) => s + p.taxable, 0);
+  const totalNetQty  = products.reduce((s, p) => s + p.netQty, 0);
+  const orderId      = `${seed.toString(16).padStart(8,'0').toUpperCase().slice(0,8)}-${point.id.replace(/[^a-z0-9]/gi,'').slice(0,4).toUpperCase()}`;
+  const refInvoice   = point.invoiceNumber;
+  const coordinates  = `17.${(42000000 + seed * 137) % 100000000}, 78.${(42000000 + seed * 251) % 100000000}`;
+  const orderTime    = point.timestamp.replace(' ', ', ');
+
+  return (
+    <div className="h-full overflow-y-auto bg-[#F9FAFB]">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="text-gray-600 hover:text-gray-900 transition-colors">
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <ShoppingCart className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900">Customer Order Details</h1>
+              <p className="text-sm text-gray-500">Customer: {point.storeName}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-6 py-6 space-y-6">
+        {/* Summary cards */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <ShoppingCart className="w-6 h-6 text-blue-500" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 mb-0.5">Total Orders</p>
+              <p className="text-2xl font-bold text-gray-900">1</p>
+              <p className="text-xs text-blue-500 flex items-center gap-1 mt-0.5">
+                <span className="w-3 h-3 inline-block">📅</span> Customer Orders
+              </p>
+            </div>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+              <IndianRupee className="w-6 h-6 text-teal-500" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 mb-0.5">Total Amount</p>
+              <p className="text-2xl font-bold text-gray-900">₹ {point.invoiceValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+              <p className="text-xs text-blue-500 flex items-center gap-1 mt-0.5">
+                <ArrowUpRight className="w-3 h-3" /> Order Value
+              </p>
+            </div>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-cyan-100 flex items-center justify-center flex-shrink-0">
+              <LayoutGrid className="w-6 h-6 text-cyan-500" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 mb-0.5">Total Products</p>
+              <p className="text-2xl font-bold text-gray-900">{products.length}</p>
+              <p className="text-xs text-blue-500 flex items-center gap-1 mt-0.5">
+                <LayoutGrid className="w-3 h-3" /> Product Count
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Customer Information */}
+        <div className="bg-white border border-gray-200 rounded-lg p-5">
+          <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <User className="w-5 h-5 text-blue-500" /> Customer Information
+          </h2>
+          <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Customer Business Name</p>
+              <p className="text-sm font-medium text-gray-900">{point.storeName}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Address</p>
+              <p className="text-sm font-medium text-gray-900">{point.address}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Mobile Number</p>
+              <p className="text-sm font-medium text-gray-900">{point.phone}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Coordinates</p>
+              <p className="text-sm font-medium text-gray-900">{coordinates}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Order Details */}
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <LayoutGrid className="w-5 h-5 text-blue-500" /> Order Details
+            </h2>
+          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100">
+                {[
+                  { icon: '#', label: 'ORDER ID' },
+                  { icon: '📄', label: 'REFERENCE INVOICE' },
+                  { icon: 'ℹ', label: 'STATUS' },
+                  { icon: '⏰', label: 'TIME' },
+                  { icon: '₹', label: 'ORDER TOTAL' },
+                  { icon: '💬', label: 'RETURN REASON' },
+                ].map(col => (
+                  <th key={col.label} className="px-4 py-3 text-left text-xs font-bold text-blue-500 uppercase tracking-wide">
+                    <span className="mr-1 opacity-70">{col.icon}</span>{col.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="hover:bg-gray-50">
+                <td className="px-4 py-3 text-xs text-gray-700 font-mono">{orderId}</td>
+                <td className="px-4 py-3 text-sm text-gray-700">{refInvoice}</td>
+                <td className="px-4 py-3">
+                  <span className={`inline-block px-2.5 py-1 rounded text-xs font-medium ${statusBadgeClass(point.status)}`}>
+                    {point.status === 'Pending' ? 'Ready for Planning' : point.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-700">{orderTime}</td>
+                <td className="px-4 py-3 text-sm font-medium text-gray-900">₹ {point.invoiceValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                <td className="px-4 py-3 text-sm text-gray-400">-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Order Products */}
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <Users className="w-5 h-5 text-blue-500" /> Order Products
+            </h2>
+          </div>
+          {/* Sub-header for the order */}
+          <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-3">
+            <span className="text-sm font-bold text-gray-800">Order #{refInvoice}</span>
+            <span className={`inline-block px-2.5 py-0.5 rounded text-xs font-medium ${statusBadgeClass(point.status)}`}>
+              {point.status === 'Pending' ? 'Ready for Planning' : point.status}
+            </span>
+            <span className="text-sm text-gray-500">{orderTime}</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  {[
+                    { icon: '📦', label: 'PRODUCT' },
+                    { icon: '#',  label: 'HSN CODE' },
+                    { icon: '#',  label: 'CASES' },
+                    { icon: '#',  label: 'UPC' },
+                    { icon: '#',  label: 'PCS' },
+                    { icon: '#',  label: 'MRP' },
+                    { icon: '📦', label: 'PACKAGING' },
+                    { icon: '🛒', label: 'ORDERED QTY' },
+                    { icon: '↩',  label: 'RETURN QTY' },
+                    { icon: '⚖',  label: 'NET QTY' },
+                    { icon: '⚖',  label: 'UNIT WEIGHT' },
+                    { icon: '🏷',  label: 'TAXABLE' },
+                  ].map(col => (
+                    <th key={col.label} className="px-3 py-3 text-left font-bold text-blue-500 uppercase tracking-wide whitespace-nowrap">
+                      <span className="mr-1 text-blue-400 text-[10px]">{col.icon}</span>{col.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {products.map((p, i) => (
+                  <tr key={i} className="hover:bg-gray-50">
+                    <td className="px-3 py-3 text-gray-800 font-medium max-w-[180px]">{p.name}</td>
+                    <td className="px-3 py-3 text-gray-600 text-center">{p.hsnCode}</td>
+                    <td className="px-3 py-3 text-gray-600 text-center">{p.cases}</td>
+                    <td className="px-3 py-3 text-gray-600 text-center">{p.upc}</td>
+                    <td className="px-3 py-3 text-gray-600 text-center">{p.pcs}</td>
+                    <td className="px-3 py-3 text-gray-700">₹ {p.mrp.toFixed(2)}</td>
+                    <td className="px-3 py-3 text-gray-600">{p.packaging}</td>
+                    <td className="px-3 py-3 text-gray-600 text-center">{p.orderedQty}</td>
+                    <td className="px-3 py-3 text-gray-600 text-center">{p.returnQty}</td>
+                    <td className="px-3 py-3 text-gray-600 text-center">{p.netQty}</td>
+                    <td className="px-3 py-3 text-gray-600 whitespace-nowrap">{p.unitWeight}</td>
+                    <td className="px-3 py-3 text-gray-700 font-medium">{p.taxable.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-gray-200 bg-gray-50">
+                  <td colSpan={9} className="px-3 py-3 text-sm font-bold text-gray-900">Total:</td>
+                  <td className="px-3 py-3 text-sm font-bold text-gray-900 text-center">{totalNetQty}</td>
+                  <td className="px-3 py-3"></td>
+                  <td className="px-3 py-3 text-sm font-bold text-gray-900">{totalTaxable.toFixed(2)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Props ──────────────────────────────────────────────────────────────────
 interface TripDetailsPageProps {
   tripId: string;
@@ -294,8 +543,14 @@ function statusBadgeClass(status: DeliveryPoint['status']) {
 // ─── Component ──────────────────────────────────────────────────────────────
 export function TripDetailsPage({ tripId, trip, onBack }: TripDetailsPageProps) {
   const [activeTab, setActiveTab] = useState('summary');
+  const [selectedCustomer, setSelectedCustomer] = useState<DeliveryPoint | null>(null);
 
   const dropPoints = trip?.dropPoints ?? 2;
+
+  // Show customer order detail sub-view when eye icon clicked
+  if (selectedCustomer) {
+    return <CustomerOrderDetail point={selectedCustomer} onBack={() => setSelectedCustomer(null)} />;
+  }
   const deliveryPoints = generateDeliveryPoints(tripId, dropPoints);
 
   const totalSaleValue    = deliveryPoints.reduce((s, p) => s + p.invoiceValue, 0);
@@ -605,7 +860,10 @@ export function TripDetailsPage({ tripId, trip, onBack }: TripDetailsPageProps) 
                     </td>
                     {/* Actions */}
                     <td className="px-4 py-3">
-                      <button className="w-8 h-8 flex items-center justify-center rounded-full border border-blue-200 text-blue-500 hover:bg-blue-50 transition-colors">
+                      <button
+                        onClick={() => setSelectedCustomer(point)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full border border-blue-200 text-blue-500 hover:bg-blue-50 transition-colors"
+                      >
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                           <circle cx="12" cy="12" r="3"/>
