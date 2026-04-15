@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, Download, Truck, User, Phone, Users, Clock, MapPin, Package, CreditCard, IndianRupee, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { ChevronLeft, Download, Truck, User, Phone, Users, Clock, MapPin, Package, CreditCard, IndianRupee, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import type { Trip } from './TripsPage';
@@ -280,23 +280,6 @@ function statusBadgeClass(status: DeliveryPoint['status']) {
   }
 }
 
-function StatusIcon({ status }: { status: DeliveryPoint['status'] }) {
-  if (status === 'Delivered')       return <CheckCircle2 className="w-4 h-4 text-green-500" />;
-  if (status === 'Partially Returned') return <AlertCircle className="w-4 h-4 text-red-500" />;
-  if (status === 'Pending')         return <XCircle className="w-4 h-4 text-gray-400" />;
-  return <Clock className="w-4 h-4 text-amber-500" />;
-}
-
-function stopCircleColor(status: DeliveryPoint['status']) {
-  switch (status) {
-    case 'Delivered':        return 'bg-green-500';
-    case 'Order Picked Up':  return 'bg-[#2D6EF5]';
-    case 'Partially Returned': return 'bg-red-500';
-    case 'In Transit':       return 'bg-amber-500';
-    default:                 return 'bg-gray-400';
-  }
-}
-
 // ─── Component ──────────────────────────────────────────────────────────────
 export function TripDetailsPage({ tripId, trip, onBack }: TripDetailsPageProps) {
   const [activeTab, setActiveTab] = useState('summary');
@@ -445,89 +428,75 @@ export function TripDetailsPage({ tripId, trip, onBack }: TripDetailsPageProps) 
 
             {/* ── Delivery Progress ── */}
             <div className="bg-white border border-gray-200 rounded-lg p-5 flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold text-gray-900">Delivery Progress</h2>
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                  {deliveredPoints.length}/{dropPoints} done
-                </span>
-              </div>
+              <h2 className="text-base font-bold text-gray-900 mb-4">Delivery Progress</h2>
 
-              {/* Progress bar */}
-              <div className="w-full h-1.5 bg-gray-200 rounded-full mb-4">
-                <div
-                  className="h-1.5 bg-green-500 rounded-full transition-all"
-                  style={{ width: `${(deliveredPoints.length / dropPoints) * 100}%` }}
-                />
-              </div>
-
-              <div className="flex-1 overflow-y-auto space-y-0 -mr-1 pr-1" style={{ maxHeight: '420px' }}>
-                {deliveryPoints.map((point, index) => (
-                  <div key={point.id} className="relative flex gap-3">
-                    {/* Timeline line + circle */}
-                    <div className="flex flex-col items-center flex-shrink-0">
-                      <div className={`w-8 h-8 rounded-full ${stopCircleColor(point.status)} text-white flex items-center justify-center font-bold text-xs`}>
-                        {point.stopNumber}
-                      </div>
-                      {index < deliveryPoints.length - 1 && (
-                        <div className="w-0.5 flex-1 bg-gray-200 my-1 min-h-[16px]" />
-                      )}
-                    </div>
-
-                    {/* Card */}
-                    <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3">
-                      {/* Store name + status */}
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="text-sm font-bold text-gray-900 leading-tight">{point.storeName}</h3>
-                        <Badge className={`${statusBadgeClass(point.status)} rounded px-2 py-0.5 text-xs font-medium flex-shrink-0`}>
-                          <StatusIcon status={point.status} />
-                          <span className="ml-1">{point.status}</span>
-                        </Badge>
-                      </div>
-
-                      {/* Contact person + phone */}
-                      <div className="flex items-center gap-3 mb-1.5">
-                        <div className="flex items-center gap-1 text-xs text-gray-600">
-                          <User className="w-3 h-3 text-gray-400" />
-                          {point.contactPerson}
+              <div className="flex-1 overflow-y-auto -mr-1 pr-1" style={{ maxHeight: '480px' }}>
+                {/* Pickup stop — orange circle, no number */}
+                {(() => {
+                  const pickup = deliveryPoints[0];
+                  const rest   = deliveryPoints.slice(1);
+                  return (
+                    <>
+                      {/* ── Pickup entry ── */}
+                      <div className="flex gap-3">
+                        <div className="flex flex-col items-center flex-shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-[#F97316] flex items-center justify-center flex-shrink-0">
+                            <Package className="w-4 h-4 text-white" />
+                          </div>
+                          {deliveryPoints.length > 1 && (
+                            <div className="w-px flex-1 bg-gray-200 my-1 min-h-[12px]" />
+                          )}
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-600">
-                          <Phone className="w-3 h-3 text-gray-400" />
-                          {point.phone}
+                        <div className="flex-1 pb-4">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <span className="text-sm font-bold text-gray-900 leading-tight">{pickup.storeName}</span>
+                            <Badge className="bg-green-100 text-green-700 rounded px-2 py-0.5 text-xs font-medium flex-shrink-0 border-0">
+                              Order Picked Up
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-gray-500 mb-1 leading-relaxed">{pickup.address}</p>
+                          <p className="text-xs text-gray-400 mb-2">{pickup.timestamp}</p>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-gray-500">OTP :</span>
+                            <Badge className="bg-[#DBEAFE] text-[#1E40AF] hover:bg-[#DBEAFE] rounded px-2 py-0.5 text-xs font-bold border-0">
+                              {pickup.otp}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Address */}
-                      <div className="flex items-start gap-1 mb-2">
-                        <MapPin className="w-3 h-3 text-gray-400 mt-0.5 flex-shrink-0" />
-                        <p className="text-xs text-gray-500 leading-relaxed">{point.address}</p>
-                      </div>
-
-                      {/* Invoice + payment */}
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs text-gray-500">Inv: {point.invoiceNumber}</span>
-                        <span className="text-xs font-semibold text-gray-900">₹ {point.invoiceValue.toFixed(2)}</span>
-                      </div>
-
-                      {/* Payment mode + timestamp + OTP */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                            point.paymentMode === 'COD'     ? 'bg-orange-100 text-orange-700' :
-                            point.paymentMode === 'Digital' ? 'bg-blue-100 text-blue-700'   :
-                                                              'bg-purple-100 text-purple-700'
-                          }`}>{point.paymentMode}</span>
-                          <span className="text-xs text-gray-500">{point.timestamp}</span>
+                      {/* ── Delivery stops ── */}
+                      {rest.map((point, index) => (
+                        <div key={point.id} className="flex gap-3">
+                          <div className="flex flex-col items-center flex-shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-[#6B7280] text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+                              {index + 1}
+                            </div>
+                            {index < rest.length - 1 && (
+                              <div className="w-px flex-1 bg-gray-200 my-1 min-h-[12px]" />
+                            )}
+                          </div>
+                          <div className="flex-1 pb-4">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <span className="text-sm font-bold text-gray-900 leading-tight">{point.storeName}</span>
+                              <Badge className={`${statusBadgeClass(point.status)} rounded px-2 py-0.5 text-xs font-medium flex-shrink-0 border-0`}>
+                                {point.status}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-gray-500 mb-1 leading-relaxed">{point.address}</p>
+                            <p className="text-xs text-gray-400 mb-2">{point.timestamp}</p>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs text-gray-500">OTP :</span>
+                              <Badge className="bg-[#DBEAFE] text-[#1E40AF] hover:bg-[#DBEAFE] rounded px-2 py-0.5 text-xs font-bold border-0">
+                                {point.otp}
+                              </Badge>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-gray-500">OTP:</span>
-                          <Badge className="bg-[#DBEAFE] text-[#1E40AF] hover:bg-[#DBEAFE] rounded px-1.5 py-0.5 text-xs font-bold">
-                            {point.otp}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                      ))}
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
