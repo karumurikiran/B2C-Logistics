@@ -236,7 +236,8 @@ export function TripsPage({ extraTrips = [] }: TripsPageProps) {
 
   // If a trip is selected, show trip details page
   if (selectedTripId) {
-    return <TripDetailsPage tripId={selectedTripId} onBack={() => setSelectedTripId(null)} />;
+    const selectedTrip = trips.find(t => t.id === selectedTripId) ?? null;
+    return <TripDetailsPage tripId={selectedTripId} trip={selectedTrip} onBack={() => setSelectedTripId(null)} />;
   }
 
   return (
