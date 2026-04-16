@@ -874,13 +874,77 @@ export function TripDetailsPage({ tripId, trip, onBack }: TripDetailsPageProps) 
           </div>
         )}
 
-        {activeTab === 'ordered-products' && (
-          <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-            <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">Ordered Products</p>
-            <p className="text-sm text-gray-400 mt-1">Product-level breakdown coming soon</p>
-          </div>
-        )}
+        {activeTab === 'ordered-products' && (() => {
+          // Aggregate all products across all delivery points for this trip
+          const seed = tripId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+          const allProducts = generateProductsForCustomer(seed);
+
+          // Build table rows with UOM, delivered, pending, total qty, amount
+          const rows = allProducts.map((p, i) => {
+            const delivered = i % 3 === 0 ? p.netQty : 0;
+            const pending   = p.netQty - delivered;
+            const amount    = p.netQty * p.mrp;
+            return { ...p, uom: i % 3 === 0 ? 'KG' : i % 3 === 1 ? 'Box' : 'Pcs', delivered, pending, amount };
+          });
+
+          const totalQty    = rows.reduce((s, r) => s + r.netQty, 0);
+          const totalAmount = rows.reduce((s, r) => s + r.amount, 0);
+
+          const colHeaders = [
+            { icon: '📦', label: 'PRODUCT NAME' },
+            { icon: '✏️', label: 'UOM' },
+            { icon: '▦',  label: 'UPC' },
+            { icon: '📦', label: 'CASES' },
+            { icon: '👤', label: 'PCS' },
+            { icon: '🏷', label: 'MRP' },
+            { icon: '✅', label: 'DELIVERED' },
+            { icon: '🕐', label: 'PENDING' },
+            { icon: '📊', label: 'TOTAL QTY' },
+            { icon: '₹',  label: 'AMOUNT' },
+          ];
+
+          return (
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-white">
+                    {colHeaders.map(col => (
+                      <th key={col.label} className="px-4 py-3 text-left whitespace-nowrap">
+                        <div className="flex items-center gap-1">
+                          <span className="text-blue-500 text-xs">{col.icon}</span>
+                          <span className="text-xs font-bold text-blue-500 uppercase tracking-wide">{col.label}</span>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {rows.map((row, i) => (
+                    <tr key={i} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 text-sm text-gray-800 font-medium max-w-[220px]">{row.name}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{row.uom}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 text-center">{row.upc}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 text-center">{row.cases}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 text-center">{row.pcs}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700">₹ {row.mrp.toFixed(2)}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 text-center">{row.delivered}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 text-center">{row.pending}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 text-center">{row.netQty}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">₹ {row.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-gray-200 bg-gray-50">
+                    <td colSpan={8} className="px-4 py-3 text-sm font-bold text-gray-900 text-right">Total:</td>
+                    <td className="px-4 py-3 text-sm font-bold text-gray-900 text-center">{totalQty}</td>
+                    <td className="px-4 py-3 text-sm font-bold text-gray-900">₹ {totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          );
+        })()}
 
         {activeTab === 'return-products' && (
           <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
