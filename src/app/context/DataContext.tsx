@@ -33,6 +33,7 @@ export interface Order {
   volumetricWeight?: number;
   deliveryTime?: string;
   customerId?: string;
+  deliveryType?: 'Self' | '3PL';
 }
 
 export interface Trip {

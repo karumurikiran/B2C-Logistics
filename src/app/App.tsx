@@ -93,6 +93,7 @@ export default function App() {
       case 'delivery':
         return (
           <DeliveryPlanningPage
+            activeTab={activeTab}
             onTripsCreated={(trips) => {
               setConfirmedTrips(prev => [...trips, ...prev]);
               setActiveMenuItem('trips');
@@ -100,7 +101,7 @@ export default function App() {
           />
         );
       case 'trips':
-        return <TripsPage extraTrips={confirmedTrips} />;
+        return <TripsPage extraTrips={confirmedTrips} activeTab={activeTab} />;
       case 'reports':
         return <ReportsPage />;
       case 'customers':
@@ -177,10 +178,12 @@ export default function App() {
                     3PL Logistics
                   </button>
                   <button
-                    onClick={() => {
-                      setShowSelfLogisticsDialog(true);
-                    }}
-                    className="px-4 py-1.5 text-sm font-medium rounded-md text-gray-400"
+                    onClick={() => setActiveTab('self')}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+                      activeTab === 'self'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
                   >
                     Self Logistics
                   </button>

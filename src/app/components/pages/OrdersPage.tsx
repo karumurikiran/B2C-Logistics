@@ -22,7 +22,7 @@ export function OrdersPage({
   onNavigateToCreateDeliveryRoute,
   onNavigateToOrderDetails,
 }: OrdersPageProps) {
-  const { orders: contextOrders, addOrder, deleteOrder, updateOrderStatus, customers } = useData();
+  const { orders: contextOrders, addOrder, deleteOrder, updateOrderStatus, updateOrder, customers } = useData();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [createOrderOpen, setCreateOrderOpen] = useState(false);
@@ -76,6 +76,14 @@ export function OrdersPage({
         setSelectedOrderId(null);
       }, 3000); // Reset highlight after 3 seconds
     }
+  };
+
+  const handleMake3PL = (id: string) => {
+    updateOrder(id, { deliveryType: '3PL' });
+  };
+
+  const handleCancelOrder = (id: string) => {
+    updateOrderStatus(id, 'Cancelled');
   };
 
   const handleSelectOrdersForMerge = (orderIds: string[]) => {
@@ -276,6 +284,8 @@ export function OrdersPage({
               onNavigateToOrderDetails(order);
             }
           }}
+          onMake3PL={handleMake3PL}
+          onCancelOrder={handleCancelOrder}
         />
       </div>
 

@@ -19,6 +19,7 @@ export interface Trip {
   dropPoints: number;
   arrivalTime: string;
   charges: string;
+  deliveryType?: '3pl' | 'self';
 }
 
 const mockTrips: Trip[] = [
@@ -31,6 +32,7 @@ const mockTrips: Trip[] = [
     dropPoints: 3,
     arrivalTime: '2026-02-18 09:40 AM',
     charges: '₹ 2,300.00',
+    deliveryType: '3pl',
   },
   {
     id: '2',
@@ -41,6 +43,7 @@ const mockTrips: Trip[] = [
     dropPoints: 12,
     arrivalTime: '2026-02-18 09:00 AM',
     charges: '₹ 2,300.00',
+    deliveryType: '3pl',
   },
   {
     id: '3',
@@ -51,6 +54,7 @@ const mockTrips: Trip[] = [
     dropPoints: 14,
     arrivalTime: '2026-02-17 09:34 AM',
     charges: '₹ 2,300.00',
+    deliveryType: '3pl',
   },
   {
     id: '4',
@@ -61,6 +65,7 @@ const mockTrips: Trip[] = [
     dropPoints: 8,
     arrivalTime: '2026-02-17 09:56 AM',
     charges: '₹ 2,300.00',
+    deliveryType: '3pl',
   },
   {
     id: '5',
@@ -71,6 +76,7 @@ const mockTrips: Trip[] = [
     dropPoints: 1,
     arrivalTime: '2026-02-17 05:15 PM',
     charges: '₹ 2,300.00',
+    deliveryType: '3pl',
   },
   {
     id: '6',
@@ -81,6 +87,7 @@ const mockTrips: Trip[] = [
     dropPoints: 18,
     arrivalTime: '2026-02-14 11:08 AM',
     charges: '₹ 2,300.00',
+    deliveryType: '3pl',
   },
   {
     id: '7',
@@ -91,6 +98,7 @@ const mockTrips: Trip[] = [
     dropPoints: 15,
     arrivalTime: '2026-02-13 11:40 AM',
     charges: '₹ 2,300.00',
+    deliveryType: '3pl',
   },
   {
     id: '8',
@@ -101,15 +109,21 @@ const mockTrips: Trip[] = [
     dropPoints: 5,
     arrivalTime: '2026-02-18 10:30 AM',
     charges: '₹ 2,300.00',
+    deliveryType: '3pl',
   },
 ];
 
 interface TripsPageProps {
   extraTrips?: Trip[];
+  activeTab?: '3pl' | 'self';
 }
 
-export function TripsPage({ extraTrips = [] }: TripsPageProps) {
-  const trips = React.useMemo(() => [...extraTrips, ...mockTrips], [extraTrips]);
+export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps) {
+  const allTrips = React.useMemo(() => [...extraTrips, ...mockTrips], [extraTrips]);
+  const trips = React.useMemo(
+    () => allTrips.filter(t => (t.deliveryType ?? '3pl') === activeTab),
+    [allTrips, activeTab]
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
