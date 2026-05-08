@@ -506,6 +506,7 @@ export function DeliveryPlanningPage({ activeTab = '3pl', onTripsCreated }: Deli
       <CreateDeliveryRoutePage
         onBack={handleCloseCreateRoute}
         onConfirm={handleConfirmRoute}
+        activeTab={activeTab}
         onTripsCreated={(trips) => {
           setShowCreateRoute(false);
           if (onTripsCreated) onTripsCreated(trips);

@@ -67,6 +67,7 @@ export default function App() {
       return (
         <CreateDeliveryRoutePage
           onBack={() => setShowCreateDeliveryRoute(false)}
+          activeTab={activeTab}
           onConfirm={(selectedOrders, deliveryDate) => {
             console.log('Route confirmed with orders:', selectedOrders, 'Date:', deliveryDate);
             setShowCreateDeliveryRoute(false);
