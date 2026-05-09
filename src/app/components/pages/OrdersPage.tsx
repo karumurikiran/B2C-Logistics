@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Search, Filter, Plus, Package, Users, TrendingUp, Weight } from "lucide-react";
+import { Search, Filter, Plus, Package, Users, TrendingUp, Weight, Map } from "lucide-react";
 import { OrdersTable, Order } from "../OrdersTable";
 import { CreateOrderDialog } from "../CreateOrderDialog";
 import { FiltersDialog } from "../FiltersDialog";
 import { MarkDeliveredDialog } from "../MarkDeliveredDialog";
 import { MergeOrdersDialog, MergedOrder } from "../MergeOrdersDialog";
+import { OrdersMapView } from "../OrdersMapView";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useData } from "../../context/DataContext";
@@ -33,6 +34,7 @@ export function OrdersPage({
   const [mergeOrdersOpen, setMergeOrdersOpen] = useState(false);
   const [selectedOrdersForMerge, setSelectedOrdersForMerge] = useState<Order[]>([]);
   const [mergedOrders, setMergedOrders] = useState<MergedOrder[]>([]);
+  const [showMapView, setShowMapView] = useState(false);
 
   // Combine regular orders and merged orders for display
   const allOrders: (Order | MergedOrder)[] = [...contextOrders, ...mergedOrders];
@@ -154,6 +156,15 @@ export function OrdersPage({
     return `${kg.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Kgs`;
   };
 
+  if (showMapView) {
+    return (
+      <OrdersMapView
+        orders={kpiFilteredOrders as Order[]}
+        onClose={() => setShowMapView(false)}
+      />
+    );
+  }
+
   return (
     <div className="h-full overflow-y-auto px-6 py-6">
       {/* Page Header Row 1: Title + Action Buttons */}
@@ -227,45 +238,72 @@ export function OrdersPage({
         {/* KPI Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* No. of Customers */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div
+            className="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-[#2D6EF5] hover:shadow-md transition-all group"
+            onClick={() => setShowMapView(true)}
+            title="Click to view on map"
+          >
             <div className="flex items-start justify-between mb-2">
               <div>
                 <p className="text-sm text-gray-600 mb-1">No. of Customers</p>
                 <p className="text-3xl font-bold text-gray-900">{uniqueCustomers}</p>
               </div>
-              <div className="w-10 h-10 bg-[#DBEAFE] rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-[#2563EB]" />
+              <div className="w-10 h-10 bg-[#DBEAFE] rounded-lg flex items-center justify-center group-hover:bg-[#2D6EF5] transition-colors">
+                <Users className="w-5 h-5 text-[#2563EB] group-hover:text-white transition-colors" />
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">To be delivered</p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-gray-500">To be delivered</p>
+              <span className="text-xs text-[#2D6EF5] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                <Map className="w-3 h-3" /> View map
+              </span>
+            </div>
           </div>
 
           {/* Total Orders */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div
+            className="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-[#2D6EF5] hover:shadow-md transition-all group"
+            onClick={() => setShowMapView(true)}
+            title="Click to view on map"
+          >
             <div className="flex items-start justify-between mb-2">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Orders</p>
                 <p className="text-3xl font-bold text-gray-900">{totalOrders}</p>
               </div>
-              <div className="w-10 h-10 bg-[#D1FAE5] rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-[#059669]" />
+              <div className="w-10 h-10 bg-[#D1FAE5] rounded-lg flex items-center justify-center group-hover:bg-[#2D6EF5] transition-colors">
+                <TrendingUp className="w-5 h-5 text-[#059669] group-hover:text-white transition-colors" />
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">To be delivered</p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-gray-500">To be delivered</p>
+              <span className="text-xs text-[#2D6EF5] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                <Map className="w-3 h-3" /> View map
+              </span>
+            </div>
           </div>
 
           {/* Total Vol.wt */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div
+            className="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-[#2D6EF5] hover:shadow-md transition-all group"
+            onClick={() => setShowMapView(true)}
+            title="Click to view on map"
+          >
             <div className="flex items-start justify-between mb-2">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Vol.wt</p>
                 <p className="text-2xl font-bold text-gray-900">{formatWeight(totalVolumetricWeight)}</p>
               </div>
-              <div className="w-10 h-10 bg-[#FEF3C7] rounded-lg flex items-center justify-center">
-                <Weight className="w-5 h-5 text-[#D97706]" />
+              <div className="w-10 h-10 bg-[#FEF3C7] rounded-lg flex items-center justify-center group-hover:bg-[#2D6EF5] transition-colors">
+                <Weight className="w-5 h-5 text-[#D97706] group-hover:text-white transition-colors" />
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">To be delivered</p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-gray-500">To be delivered</p>
+              <span className="text-xs text-[#2D6EF5] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                <Map className="w-3 h-3" /> View map
+              </span>
+            </div>
           </div>
         </div>
       </div>
