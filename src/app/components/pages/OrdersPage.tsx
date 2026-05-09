@@ -156,15 +156,6 @@ export function OrdersPage({
     return `${kg.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Kgs`;
   };
 
-  if (showMapView) {
-    return (
-      <OrdersMapView
-        orders={kpiFilteredOrders as Order[]}
-        onClose={() => setShowMapView(false)}
-      />
-    );
-  }
-
   return (
     <div className="h-full overflow-y-auto px-6 py-6">
       {/* Page Header Row 1: Title + Action Buttons */}
@@ -352,6 +343,11 @@ export function OrdersPage({
         onOpenChange={setMergeOrdersOpen}
         orders={allOrders}
         onMergeOrders={handleConfirmMergeOrders}
+      />
+      <OrdersMapView
+        open={showMapView}
+        orders={kpiFilteredOrders as Order[]}
+        onClose={() => setShowMapView(false)}
       />
     </div>
   );
