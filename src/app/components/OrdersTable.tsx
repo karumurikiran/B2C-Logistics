@@ -221,12 +221,14 @@ export function OrdersTable({ orders, onDeleteOrder, selectedOrderId, onSelectOr
                         <Eye className="w-4 h-4 text-[#2D6EF5]" />
                         View Details
                       </DropdownMenuItem>
-                      {order.status !== 'Delivered' && (
-                        <DropdownMenuItem onClick={() => onMarkDeliveredDirect?.(order.id)} className="gap-2 cursor-pointer text-green-600 focus:text-green-600">
-                          <CheckCircle className="w-4 h-4" />
-                          Delivered
-                        </DropdownMenuItem>
-                      )}
+                      <DropdownMenuItem
+                        onClick={() => order.status === 'Ready for Planning' && onMarkDeliveredDirect?.(order.id)}
+                        disabled={order.status !== 'Ready for Planning'}
+                        className="gap-2 cursor-pointer text-green-600 focus:text-green-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:text-green-600"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Delivered
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onCancelOrder?.(order.id)} className="gap-2 cursor-pointer text-red-600 focus:text-red-600">
                         <XCircle className="w-4 h-4" />
                         Cancel
