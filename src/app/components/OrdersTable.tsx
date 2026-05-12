@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, X, Calendar, Hash, Building2, ShoppingCart, User, MapPin, Phone, Activity, Truck, MoreVertical, XCircle } from 'lucide-react';
+import { Eye, X, Calendar, Hash, Building2, ShoppingCart, User, MapPin, Phone, Activity, Truck, MoreVertical, XCircle, CheckCircle } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Pagination } from './Pagination';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
@@ -34,12 +34,13 @@ interface OrdersTableProps {
   onViewOrder?: (id: string) => void;
   onMake3PL?: (id: string) => void;
   onCancelOrder?: (id: string) => void;
+  onMarkDeliveredDirect?: (id: string) => void;
 }
 
 type SortField = 'createdDate' | 'orderDate' | 'invoiceNumber' | 'retailerName' | 'orderType' | 'salesPerson' | 'beatName' | 'mobileNumber' | 'status' | 'tripNumber';
 type SortDirection = 'asc' | 'desc';
 
-export function OrdersTable({ orders, onDeleteOrder, selectedOrderId, onSelectOrder, onMarkDelivered, onViewOrder, onMake3PL, onCancelOrder }: OrdersTableProps) {
+export function OrdersTable({ orders, onDeleteOrder, selectedOrderId, onSelectOrder, onMarkDelivered, onViewOrder, onMake3PL, onCancelOrder, onMarkDeliveredDirect }: OrdersTableProps) {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -220,6 +221,12 @@ export function OrdersTable({ orders, onDeleteOrder, selectedOrderId, onSelectOr
                         <Eye className="w-4 h-4 text-[#2D6EF5]" />
                         View Details
                       </DropdownMenuItem>
+                      {order.status !== 'Delivered' && (
+                        <DropdownMenuItem onClick={() => onMarkDeliveredDirect?.(order.id)} className="gap-2 cursor-pointer text-green-600 focus:text-green-600">
+                          <CheckCircle className="w-4 h-4" />
+                          Delivered
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => onCancelOrder?.(order.id)} className="gap-2 cursor-pointer text-red-600 focus:text-red-600">
                         <XCircle className="w-4 h-4" />
                         Cancel

@@ -88,6 +88,10 @@ export function OrdersPage({
     updateOrderStatus(id, 'Cancelled');
   };
 
+  const handleMarkDeliveredDirect = (id: string) => {
+    updateOrderStatus(id, 'Delivered');
+  };
+
   const handleSelectOrdersForMerge = (orderIds: string[]) => {
     const selectedOrders = allOrders.filter(order => orderIds.includes(order.id)) as Order[];
     setSelectedOrdersForMerge(selectedOrders);
@@ -315,6 +319,7 @@ export function OrdersPage({
           }}
           onMake3PL={handleMake3PL}
           onCancelOrder={handleCancelOrder}
+          onMarkDeliveredDirect={handleMarkDeliveredDirect}
         />
       </div>
 
