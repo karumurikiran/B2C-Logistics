@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
 import { divIcon } from 'leaflet';
 import { X, MapPin, Package, IndianRupee } from 'lucide-react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -163,8 +163,34 @@ export function OrdersMapView({ open, orders, onClose }: OrdersMapViewProps) {
                   popupAnchor: [0, -42],
                 });
 
-                return (
+                const totalInvoice = groupOrders.reduce((s, o) => s + (o.invoiceValue || 0), 0);
+                const totalWeight = groupOrders.reduce((s, o) => s + (o.volumetricWeight || 0), 0);
+                const orderType = groupOrders[0].deliveryType || groupOrders[0].orderType || 'Self';
+
+              return (
                   <Marker key={`${lat},${lng}`} position={[lat, lng]} icon={icon}>
+                    <Tooltip direction="top" offset={[0, -44]} opacity={1} className="leaflet-order-tooltip">
+                      <div style={{ minWidth: '180px', fontFamily: 'inherit' }}>
+                        <div style={{ fontWeight: 600, fontSize: '13px', color: '#111827', marginBottom: '6px', paddingBottom: '6px', borderBottom: '1px solid #e5e7eb' }}>
+                          {groupOrders[0].retailerName}
+                          {count > 1 && <span style={{ fontWeight: 400, fontSize: '11px', color: '#6b7280', marginLeft: '4px' }}>+{count - 1} more</span>}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                            <span style={{ color: '#6b7280' }}>Order Type</span>
+                            <span style={{ fontWeight: 500, color: '#111827' }}>{orderType}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                            <span style={{ color: '#6b7280' }}>Invoice Value</span>
+                            <span style={{ fontWeight: 500, color: '#111827' }}>₹{totalInvoice.toLocaleString('en-IN')}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                            <span style={{ color: '#6b7280' }}>Vol. Weight</span>
+                            <span style={{ fontWeight: 500, color: '#111827' }}>{totalWeight.toFixed(1)} Kg</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Tooltip>
                     <Popup minWidth={220} maxWidth={280}>
                       <div className="py-1">
                         <div className="font-semibold text-gray-900 text-sm mb-2 pb-2 border-b border-gray-100">
