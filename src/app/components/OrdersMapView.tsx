@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
 import { divIcon } from 'leaflet';
-import { X, MapPin, Package, IndianRupee, WifiOff, CheckCircle2 } from 'lucide-react';
+import { X, MapPin, Package, IndianRupee, WifiOff, CheckCircle2, RotateCcw } from 'lucide-react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { Order } from './OrdersTable';
 
@@ -10,6 +10,7 @@ interface OrdersMapViewProps {
   orders: Order[];
   onClose: () => void;
   onMarkOffline?: (orderIds: string[]) => void;
+  onRevertOffline?: (orderIds: string[]) => void;
   onMarkDelivered?: (orderIds: string[]) => void;
 }
 
@@ -32,7 +33,7 @@ function PinIcon({ count, offline }: { count: number; offline?: boolean }) {
   );
 }
 
-export function OrdersMapView({ open, orders, onClose, onMarkOffline, onMarkDelivered }: OrdersMapViewProps) {
+export function OrdersMapView({ open, orders, onClose, onMarkOffline, onRevertOffline, onMarkDelivered }: OrdersMapViewProps) {
   const [offlineKeys, setOfflineKeys] = useState<Set<string>>(new Set());
 
   const locationGroups = useMemo(() => {
@@ -250,12 +251,12 @@ export function OrdersMapView({ open, orders, onClose, onMarkOffline, onMarkDeli
                             Mark as Offline Order{count > 1 ? ` (${count} orders)` : ''}
                           </button>
                         )}
-                        {/* Step 2: Mark as Delivered — applies to all orders at this location */}
+                        {/* Step 2: Mark as Delivered + Revert option */}
                         {isOffline && (
                           <>
                             {count > 1 && (
                               <p style={{ margin: '8px 0 0', fontSize: '11px', color: '#6b7280', textAlign: 'center' }}>
-                                Will mark all {count} orders as delivered
+                                Will apply to all {count} orders at this location
                               </p>
                             )}
                             <button
@@ -273,6 +274,23 @@ export function OrdersMapView({ open, orders, onClose, onMarkOffline, onMarkDeli
                             >
                               <CheckCircle2 style={{ width: 12, height: 12 }} />
                               Mark as Delivered{count > 1 ? ` (${count} orders)` : ''}
+                            </button>
+                            {/* Undo accidental offline mark */}
+                            <button
+                              onClick={() => {
+                                onRevertOffline?.(groupOrders.map(o => o.id));
+                                toggleOffline(key);
+                              }}
+                              style={{
+                                marginTop: '4px', width: '100%', padding: '5px 10px',
+                                borderRadius: '6px', border: '1px solid #d1d5db',
+                                background: '#f9fafb', color: '#6b7280',
+                                fontSize: '11px', fontWeight: 500, cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                              }}
+                            >
+                              <RotateCcw style={{ width: 11, height: 11 }} />
+                              Undo — Revert to Previous Status
                             </button>
                           </>
                         )}

@@ -359,6 +359,7 @@ export function OrdersPage({
         orders={mapOrders as Order[]}
         onClose={() => setShowMapView(false)}
         onMarkOffline={(ids) => ids.forEach(id => updateOrderStatus(id, 'Offline Order'))}
+        onRevertOffline={(ids) => ids.forEach(id => updateOrderStatus(id, 'Ready for Planning'))}
         onMarkDelivered={(ids) => ids.forEach(id => updateOrderStatus(id, 'Delivered'))}
       />
     </div>
