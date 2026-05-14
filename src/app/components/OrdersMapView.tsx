@@ -153,7 +153,8 @@ export function OrdersMapView({ open, orders, onClose, onMarkOffline, onMarkDeli
               />
               {locationGroups.map(({ key, lat, lng, orders: groupOrders }) => {
                 const count = groupOrders.length;
-                const isOffline = offlineKeys.has(key);
+                // Derive from real status (persisted) OR local toggle for instant feedback
+                const isOffline = offlineKeys.has(key) || groupOrders.every(o => o.status === 'Offline Order');
                 const iconHtml = renderToStaticMarkup(<PinIcon count={count} offline={isOffline} />);
                 const icon = divIcon({
                   html: iconHtml,
@@ -230,7 +231,7 @@ export function OrdersMapView({ open, orders, onClose, onMarkOffline, onMarkDeli
                             <span className="font-semibold text-gray-900">₹{groupOrders.reduce((s, o) => s + (o.invoiceValue || 0), 0).toLocaleString('en-IN')}</span>
                           </div>
                         )}
-                        {/* Step 1: Mark as Offline */}
+                        {/* Step 1: Mark as Offline — only if not already offline */}
                         {!isOffline && (
                           <button
                             onClick={() => {

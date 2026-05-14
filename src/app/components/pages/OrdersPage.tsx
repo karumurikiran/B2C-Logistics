@@ -134,6 +134,11 @@ export function OrdersPage({
   // Filter orders for KPIs - only 'Ready for Planning' orders
   const kpiFilteredOrders = allOrders.filter((order) => order.status === 'Ready for Planning');
 
+  // Map view shows Ready for Planning + Offline Orders (so offline pins remain visible)
+  const mapOrders = allOrders.filter((order) =>
+    order.status === 'Ready for Planning' || order.status === 'Offline Order'
+  );
+
   // Calculate KPIs
   const uniqueCustomers = new Set(
     kpiFilteredOrders.map((order) => {
@@ -351,7 +356,7 @@ export function OrdersPage({
       />
       <OrdersMapView
         open={showMapView}
-        orders={kpiFilteredOrders as Order[]}
+        orders={mapOrders as Order[]}
         onClose={() => setShowMapView(false)}
         onMarkOffline={(ids) => ids.forEach(id => updateOrderStatus(id, 'Offline Order'))}
         onMarkDelivered={(ids) => ids.forEach(id => updateOrderStatus(id, 'Delivered'))}
