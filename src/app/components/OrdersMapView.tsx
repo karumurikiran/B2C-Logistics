@@ -251,7 +251,7 @@ export function OrdersMapView({ open, orders, onClose, onMarkOffline, onRevertOf
                             Mark as Offline Order{count > 1 ? ` (${count} orders)` : ''}
                           </button>
                         )}
-                        {/* Step 2: Mark as Delivered + Revert option */}
+                        {/* Step 2: Mark as Delivered + Undo icon */}
                         {isOffline && (
                           <>
                             {count > 1 && (
@@ -259,39 +259,48 @@ export function OrdersMapView({ open, orders, onClose, onMarkOffline, onRevertOf
                                 Will apply to all {count} orders at this location
                               </p>
                             )}
-                            <button
-                              onClick={() => {
-                                onMarkDelivered?.(groupOrders.map(o => o.id));
-                                toggleOffline(key);
-                              }}
-                              style={{
-                                marginTop: '6px', width: '100%', padding: '6px 10px',
-                                borderRadius: '6px', border: '1px solid #16a34a',
-                                background: '#f0fdf4', color: '#16a34a',
-                                fontSize: '12px', fontWeight: 600, cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                              }}
-                            >
-                              <CheckCircle2 style={{ width: 12, height: 12 }} />
-                              Mark as Delivered{count > 1 ? ` (${count} orders)` : ''}
-                            </button>
-                            {/* Undo accidental offline mark */}
-                            <button
-                              onClick={() => {
-                                onRevertOffline?.(groupOrders.map(o => o.id));
-                                toggleOffline(key);
-                              }}
-                              style={{
-                                marginTop: '4px', width: '100%', padding: '5px 10px',
-                                borderRadius: '6px', border: '1px solid #d1d5db',
-                                background: '#f9fafb', color: '#6b7280',
-                                fontSize: '11px', fontWeight: 500, cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
-                              }}
-                            >
-                              <RotateCcw style={{ width: 11, height: 11 }} />
-                              Undo — Revert to Previous Status
-                            </button>
+                            <div style={{ display: 'flex', gap: '6px', marginTop: '6px', alignItems: 'center' }}>
+                              <button
+                                onClick={() => {
+                                  onMarkDelivered?.(groupOrders.map(o => o.id));
+                                  toggleOffline(key);
+                                }}
+                                style={{
+                                  flex: 1, padding: '6px 10px',
+                                  borderRadius: '6px', border: '1px solid #16a34a',
+                                  background: '#f0fdf4', color: '#16a34a',
+                                  fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                                }}
+                              >
+                                <CheckCircle2 style={{ width: 12, height: 12 }} />
+                                Mark as Delivered
+                              </button>
+                              {/* Undo icon — hover to revert */}
+                              <button
+                                title="Revert to previous status"
+                                onMouseEnter={() => {
+                                  onRevertOffline?.(groupOrders.map(o => o.id));
+                                  toggleOffline(key);
+                                }}
+                                style={{
+                                  width: '30px', height: '30px', flexShrink: 0,
+                                  borderRadius: '6px', border: '1px solid #d1d5db',
+                                  background: '#f9fafb', color: '#9ca3af',
+                                  cursor: 'pointer', display: 'flex',
+                                  alignItems: 'center', justifyContent: 'center',
+                                  transition: 'background 0.15s, color 0.15s, border-color 0.15s',
+                                }}
+                                onMouseLeave={(e) => {
+                                  const el = e.currentTarget;
+                                  el.style.background = '#f9fafb';
+                                  el.style.color = '#9ca3af';
+                                  el.style.borderColor = '#d1d5db';
+                                }}
+                              >
+                                <RotateCcw style={{ width: 13, height: 13 }} />
+                              </button>
+                            </div>
                           </>
                         )}
                       </div>
