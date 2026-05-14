@@ -242,27 +242,34 @@ export function OrdersMapView({ open, orders, onClose, onMarkDelivered }: Orders
                             }}
                           >
                             <WifiOff style={{ width: 12, height: 12 }} />
-                            Mark as Offline Order
+                            Mark as Offline Order{count > 1 ? ` (${count} orders)` : ''}
                           </button>
                         )}
-                        {/* Step 2: Mark as Delivered (shown after marking offline) */}
+                        {/* Step 2: Mark as Delivered — applies to all orders at this location */}
                         {isOffline && (
-                          <button
-                            onClick={() => {
-                              onMarkDelivered?.(groupOrders.map(o => o.id));
-                              toggleOffline(key);
-                            }}
-                            style={{
-                              marginTop: '10px', width: '100%', padding: '6px 10px',
-                              borderRadius: '6px', border: '1px solid #16a34a',
-                              background: '#f0fdf4', color: '#16a34a',
-                              fontSize: '12px', fontWeight: 600, cursor: 'pointer',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                            }}
-                          >
-                            <CheckCircle2 style={{ width: 12, height: 12 }} />
-                            Mark as Delivered
-                          </button>
+                          <>
+                            {count > 1 && (
+                              <p style={{ margin: '8px 0 0', fontSize: '11px', color: '#6b7280', textAlign: 'center' }}>
+                                Will mark all {count} orders as delivered
+                              </p>
+                            )}
+                            <button
+                              onClick={() => {
+                                onMarkDelivered?.(groupOrders.map(o => o.id));
+                                toggleOffline(key);
+                              }}
+                              style={{
+                                marginTop: '6px', width: '100%', padding: '6px 10px',
+                                borderRadius: '6px', border: '1px solid #16a34a',
+                                background: '#f0fdf4', color: '#16a34a',
+                                fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                              }}
+                            >
+                              <CheckCircle2 style={{ width: 12, height: 12 }} />
+                              Mark as Delivered{count > 1 ? ` (${count} orders)` : ''}
+                            </button>
+                          </>
                         )}
                       </div>
                     </Popup>

@@ -1342,8 +1342,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const updateOrderStatus = (id: string, status: Order['status'], tripNumber?: string) => {
-    setOrders(orders.map(o => 
-      o.id === id 
+    setOrders(prev => prev.map(o =>
+      o.id === id
         ? { ...o, status, tripNumber: tripNumber || o.tripNumber }
         : o
     ));
