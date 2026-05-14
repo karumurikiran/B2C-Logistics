@@ -110,104 +110,84 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
     <>
       <div className="h-full flex flex-col px-6 py-4 bg-gray-50">
         {/* Page Header */}
-        <div className="mb-3 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onBack}
-              className="w-8 h-8 rounded-lg border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 text-gray-700" />
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-[#2D6EF5] rounded flex items-center justify-center">
-                <Package className="w-4 h-4 text-white" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-900">Create Delivery Route</h1>
+        <div className="mb-3 flex items-center flex-shrink-0">
+          <button
+            onClick={onBack}
+            className="w-8 h-8 rounded-lg border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors mr-3"
+          >
+            <ArrowLeft className="w-4 h-4 text-gray-700" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-[#2D6EF5] rounded flex items-center justify-center">
+              <Package className="w-4 h-4 text-white" />
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={onBack}
-              className="px-5 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-sm"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleConfirm}
-              disabled={selectedOrderIds.length === 0}
-              className="px-5 py-2 bg-[#2D6EF5] hover:bg-[#2557D6] text-white disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
-            >
-              Plan Route ({selectedOrderIds.length})
-            </Button>
+            <h1 className="text-xl font-bold text-gray-900">Create Delivery Route</h1>
           </div>
         </div>
 
-        {/* Compact Controls Row */}
+        {/* Controls — Delivery Date + Filter stacked */}
         <div className="bg-white rounded-lg border border-gray-200 p-4 mb-3 flex-shrink-0">
-          <div className="flex items-start gap-6">
-            {/* Delivery Date */}
-            <div className="flex-shrink-0">
-              <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
-                Delivery Date
-              </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={deliveryDate}
-                  onChange={(e) => setDeliveryDate(e.target.value)}
-                  className="w-44 px-3 py-2 pr-9 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2D6EF5] focus:border-transparent"
-                />
-                <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
+          {/* Delivery Date */}
+          <div className="mb-3">
+            <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
+              Delivery Date
+            </label>
+            <div className="relative w-44">
+              <input
+                type="date"
+                value={deliveryDate}
+                onChange={(e) => setDeliveryDate(e.target.value)}
+                className="w-full px-3 py-2 pr-9 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2D6EF5] focus:border-transparent"
+              />
+              <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
+          </div>
 
-            {/* Divider */}
-            <div className="w-px h-14 bg-gray-200 flex-shrink-0 mt-1" />
+          {/* Divider */}
+          <div className="h-px bg-gray-100 mb-3" />
 
-            {/* Order Dates */}
-            <div className="flex-1 min-w-0">
-              <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
-                Filter by Order Date
-              </label>
-              <div className="flex items-center gap-2 flex-wrap">
-                {orderDates.map((date) => (
-                  <label
+          {/* Filter by Order Date */}
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
+              Filter by Order Date
+            </label>
+            <div className="flex items-center gap-2 flex-wrap">
+              {orderDates.map((date) => (
+                <label
+                  key={date}
+                  className={`flex items-center gap-1.5 cursor-pointer px-2.5 py-1.5 border rounded-md text-xs transition-colors flex-shrink-0 ${
+                    selectedOrderDates.includes(date)
+                      ? 'border-[#2D6EF5] bg-blue-50 text-[#2D6EF5]'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                  }`}
+                >
+                  <Checkbox
+                    checked={selectedOrderDates.includes(date)}
+                    onCheckedChange={() => handleOrderDateToggle(date)}
+                    className="w-3.5 h-3.5"
+                  />
+                  <span className="whitespace-nowrap">{date}</span>
+                </label>
+              ))}
+            </div>
+            {selectedOrderDates.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {selectedOrderDates.map((date) => (
+                  <div
                     key={date}
-                    className={`flex items-center gap-1.5 cursor-pointer px-2.5 py-1.5 border rounded-md text-xs transition-colors flex-shrink-0 ${
-                      selectedOrderDates.includes(date)
-                        ? 'border-[#2D6EF5] bg-blue-50 text-[#2D6EF5]'
-                        : 'border-gray-200 hover:border-gray-300 text-gray-600'
-                    }`}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-[#2D6EF5] rounded text-xs font-medium"
                   >
-                    <Checkbox
-                      checked={selectedOrderDates.includes(date)}
-                      onCheckedChange={() => handleOrderDateToggle(date)}
-                      className="w-3.5 h-3.5"
-                    />
-                    <span className="whitespace-nowrap">{date}</span>
-                  </label>
+                    {date}
+                    <button
+                      onClick={() => handleRemoveOrderDate(date)}
+                      className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
                 ))}
               </div>
-              {/* Selected Date Pills */}
-              {selectedOrderDates.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {selectedOrderDates.map((date) => (
-                    <div
-                      key={date}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-[#2D6EF5] rounded text-xs font-medium"
-                    >
-                      {date}
-                      <button
-                        onClick={() => handleRemoveOrderDate(date)}
-                        className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
 
@@ -356,6 +336,23 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
               </div>
             </div>
           )}
+        </div>
+
+        {/* Bottom Action Buttons */}
+        <div className="flex items-center justify-end gap-3 pt-3 flex-shrink-0">
+          <Button
+            onClick={onBack}
+            className="px-5 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-sm"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            disabled={selectedOrderIds.length === 0}
+            className="px-5 py-2 bg-[#2D6EF5] hover:bg-[#2557D6] text-white disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+          >
+            Plan Route ({selectedOrderIds.length})
+          </Button>
         </div>
       </div>
       {showOptimizedModal && (
