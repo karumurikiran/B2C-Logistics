@@ -248,7 +248,7 @@ export function OrdersMapView({ open, orders, onClose, onMarkOffline, onRevertOf
                             }}
                           >
                             <WifiOff style={{ width: 12, height: 12 }} />
-                            Mark as Offline Order{count > 1 ? ` (${count} orders)` : ''}
+                            Mark as Offline Delivery{count > 1 ? ` (${count} orders)` : ''}
                           </button>
                         )}
                         {/* Step 2: Mark as Delivered + Undo icon */}
