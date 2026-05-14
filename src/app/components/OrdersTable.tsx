@@ -155,12 +155,6 @@ export function OrdersTable({ orders, onDeleteOrder, selectedOrderId, onSelectOr
               <ColumnHeader field="tripNumber" icon={Truck} label="Trip Number" />
               <th className="px-4 py-3 text-left bg-gray-50">
                 <div className="flex items-center gap-2 text-xs font-medium text-gray-600 uppercase tracking-wider">
-                  <Truck className="w-4 h-4 text-[#2D6EF5]" />
-                  Delivery Type
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left bg-gray-50">
-                <div className="flex items-center gap-2 text-xs font-medium text-gray-600 uppercase tracking-wider">
                   <Activity className="w-4 h-4 text-[#2D6EF5]"/>
                   Actions
                 </div>
@@ -202,14 +196,6 @@ export function OrdersTable({ orders, onDeleteOrder, selectedOrderId, onSelectOr
                   ) : (
                     <span className="text-sm text-gray-500">-</span>
                   )}
-                </td>
-                <td className="px-4 py-3">
-                  <Badge className={order.deliveryType === '3PL'
-                    ? 'bg-[#DBEAFE] text-[#1E40AF] hover:bg-[#DBEAFE] rounded px-3'
-                    : 'bg-[#FEF3C7] text-[#92400E] hover:bg-[#FEF3C7] rounded px-3'
-                  }>
-                    {order.deliveryType === '3PL' ? '3PL' : 'Self'}
-                  </Badge>
                 </td>
                 <td className="px-4 py-3">
                   <DropdownMenu>
