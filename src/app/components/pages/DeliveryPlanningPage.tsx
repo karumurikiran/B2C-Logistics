@@ -364,6 +364,7 @@ interface DeliveryRoute {
   volume: string;
   routeExpiry: string;
   actionType: 'view' | 'request';
+  deliveryType: '3pl' | 'self';
 }
 
 interface Order {
@@ -379,10 +380,11 @@ interface Order {
 }
 
 interface DeliveryPlanningPageProps {
+  activeTab?: '3pl' | 'self';
   onTripsCreated?: (trips: any[]) => void;
 }
 
-export function DeliveryPlanningPage({ onTripsCreated }: DeliveryPlanningPageProps) {
+export function DeliveryPlanningPage({ activeTab = '3pl', onTripsCreated }: DeliveryPlanningPageProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [showCreateRoute, setShowCreateRoute] = useState(false);
@@ -399,6 +401,7 @@ export function DeliveryPlanningPage({ onTripsCreated }: DeliveryPlanningPagePro
       volume: '2.52 Kgs',
       routeExpiry: '2m 50s left',
       actionType: 'view',
+      deliveryType: '3pl',
     },
     {
       id: '2',
@@ -410,6 +413,7 @@ export function DeliveryPlanningPage({ onTripsCreated }: DeliveryPlanningPagePro
       volume: '2.52 Kgs',
       routeExpiry: '2m 28s left',
       actionType: 'request',
+      deliveryType: '3pl',
     },
     {
       id: '3',
@@ -421,6 +425,7 @@ export function DeliveryPlanningPage({ onTripsCreated }: DeliveryPlanningPagePro
       volume: '30.39 Kgs',
       routeExpiry: '54s left',
       actionType: 'request',
+      deliveryType: '3pl',
     },
   ]);
 
@@ -454,14 +459,14 @@ export function DeliveryPlanningPage({ onTripsCreated }: DeliveryPlanningPagePro
     // Create new delivery route
     const newRoute: DeliveryRoute = {
       id: String(deliveryRoutes.length + 1),
-      createdDate: new Date().toLocaleString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric', 
-        hour: 'numeric', 
-        minute: '2-digit', 
+      createdDate: new Date().toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
         second: '2-digit',
-        hour12: true 
+        hour12: true
       }),
       routeId: newRouteId,
       dropPoints: selectedOrders.length,
@@ -470,6 +475,7 @@ export function DeliveryPlanningPage({ onTripsCreated }: DeliveryPlanningPagePro
       volume: `${totalVolWeight.toFixed(2)} Kgs`,
       routeExpiry: '5m 0s left',
       actionType: 'request',
+      deliveryType: activeTab,
     };
     
     // Add the new route to the beginning of the list
@@ -500,6 +506,7 @@ export function DeliveryPlanningPage({ onTripsCreated }: DeliveryPlanningPagePro
       <CreateDeliveryRoutePage
         onBack={handleCloseCreateRoute}
         onConfirm={handleConfirmRoute}
+        activeTab={activeTab}
         onTripsCreated={(trips) => {
           setShowCreateRoute(false);
           if (onTripsCreated) onTripsCreated(trips);
@@ -582,7 +589,7 @@ export function DeliveryPlanningPage({ onTripsCreated }: DeliveryPlanningPagePro
               </tr>
             </thead>
             <tbody className="bg-white">
-              {deliveryRoutes.map((route) => (
+              {deliveryRoutes.filter(r => r.deliveryType === activeTab).map((route) => (
                 <tr key={route.id} className="border-t border-gray-200">
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {route.createdDate}
@@ -621,7 +628,7 @@ export function DeliveryPlanningPage({ onTripsCreated }: DeliveryPlanningPagePro
         </div>
         <Pagination
           currentPage={currentPage}
-          totalItems={deliveryRoutes.length}
+          totalItems={deliveryRoutes.filter(r => r.deliveryType === activeTab).length}
           itemsPerPage={itemsPerPage}
           onPageChange={handlePageChange}
           onItemsPerPageChange={handleItemsPerPageChange}

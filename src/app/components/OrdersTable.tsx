@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Eye, X, Calendar, Hash, Building2, ShoppingCart, User, MapPin, Phone, Activity, Truck, CheckCircle } from 'lucide-react';
+import { Eye, X, Calendar, Hash, Building2, ShoppingCart, User, MapPin, Phone, Activity, Truck, MoreVertical, XCircle, CheckCircle } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Pagination } from './Pagination';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 export interface Order {
   id: string;
@@ -21,6 +22,7 @@ export interface Order {
   invoiceValue?: number;
   volumetricWeight?: number;
   deliveryTime?: string;
+  deliveryType?: 'Self' | '3PL';
 }
 
 interface OrdersTableProps {
@@ -30,12 +32,15 @@ interface OrdersTableProps {
   onSelectOrder?: (id: string) => void;
   onMarkDelivered?: (id: string) => void;
   onViewOrder?: (id: string) => void;
+  onMake3PL?: (id: string) => void;
+  onCancelOrder?: (id: string) => void;
+  onMarkDeliveredDirect?: (id: string) => void;
 }
 
 type SortField = 'createdDate' | 'orderDate' | 'invoiceNumber' | 'retailerName' | 'orderType' | 'salesPerson' | 'beatName' | 'mobileNumber' | 'status' | 'tripNumber';
 type SortDirection = 'asc' | 'desc';
 
-export function OrdersTable({ orders, onDeleteOrder, selectedOrderId, onSelectOrder, onMarkDelivered, onViewOrder }: OrdersTableProps) {
+export function OrdersTable({ orders, onDeleteOrder, selectedOrderId, onSelectOrder, onMarkDelivered, onViewOrder, onMake3PL, onCancelOrder, onMarkDeliveredDirect }: OrdersTableProps) {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -148,6 +153,12 @@ export function OrdersTable({ orders, onDeleteOrder, selectedOrderId, onSelectOr
               <ColumnHeader field="tripNumber" icon={Truck} label="Trip Number" />
               <th className="px-4 py-3 text-left bg-gray-50">
                 <div className="flex items-center gap-2 text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  <Truck className="w-4 h-4 text-[#2D6EF5]" />
+                  Delivery Type
+                </div>
+              </th>
+              <th className="px-4 py-3 text-left bg-gray-50">
+                <div className="flex items-center gap-2 text-xs font-medium text-gray-600 uppercase tracking-wider">
                   <Activity className="w-4 h-4 text-[#2D6EF5]"/>
                   Actions
                 </div>
@@ -191,34 +202,45 @@ export function OrdersTable({ orders, onDeleteOrder, selectedOrderId, onSelectOr
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => onViewOrder?.(order.id)}
-                      className="text-[#2D6EF5] hover:text-[#2557D6] transition-colors"
-                      title="View Order Details"
-                    >
-                      <Eye className="w-5 h-5" />
-                    </button>
-                    {onMarkDelivered && order.status.toLowerCase() === 'ready for planning' && (
-                      <button 
-                        onClick={() => onMarkDelivered(order.id)}
-                        className="text-[#10B981] hover:text-[#059669] transition-colors"
-                        title="Mark as Delivered"
-                      >
-                        <Truck className="w-5 h-5" />
+                  <Badge className={order.deliveryType === '3PL'
+                    ? 'bg-[#DBEAFE] text-[#1E40AF] hover:bg-[#DBEAFE] rounded px-3'
+                    : 'bg-[#FEF3C7] text-[#92400E] hover:bg-[#FEF3C7] rounded px-3'
+                  }>
+                    {order.deliveryType === '3PL' ? '3PL' : 'Self'}
+                  </Badge>
+                </td>
+                <td className="px-4 py-3">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="p-1 hover:bg-gray-100 rounded transition-colors">
+                        <MoreVertical className="w-4 h-4 text-gray-500" />
                       </button>
-                    )}
-                    {onDeleteOrder && 
-                      (order.status.toLowerCase() === 'ready for planning' || order.status.toLowerCase() === 'in planning') && 
-                      (!order.tripNumber || order.tripNumber === '-') && (
-                      <button 
-                        onClick={() => onDeleteOrder(order.id)}
-                        className="text-[#EF4444] hover:text-[#DC2626] transition-colors"
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-44">
+                      <DropdownMenuItem onClick={() => onViewOrder?.(order.id)} className="gap-2 cursor-pointer">
+                        <Eye className="w-4 h-4 text-[#2D6EF5]" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => order.status === 'Ready for Planning' && onMarkDeliveredDirect?.(order.id)}
+                        disabled={order.status !== 'Ready for Planning'}
+                        className="gap-2 cursor-pointer text-green-600 focus:text-green-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:text-green-600"
                       >
-                        <X className="w-5 h-5" />
-                      </button>
-                    )}
-                  </div>
+                        <CheckCircle className="w-4 h-4" />
+                        Delivered
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onCancelOrder?.(order.id)} className="gap-2 cursor-pointer text-red-600 focus:text-red-600">
+                        <XCircle className="w-4 h-4" />
+                        Cancel
+                      </DropdownMenuItem>
+                      {(!order.deliveryType || order.deliveryType === 'Self') && (
+                        <DropdownMenuItem onClick={() => onMake3PL?.(order.id)} className="gap-2 cursor-pointer text-[#2D6EF5] focus:text-[#2D6EF5]">
+                          <Truck className="w-4 h-4" />
+                          Make 3PL
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </td>
               </tr>
             ))}

@@ -14,15 +14,17 @@ interface Order {
   invoiceValue: number;
   totalWeight: number;
   totalVolWeight: number;
+  deliveryType: '3PL' | 'Self';
 }
 
 interface CreateDeliveryRoutePageProps {
   onBack: () => void;
   onConfirm: (selectedOrders: Order[], deliveryDate: string) => void;
   onTripsCreated?: (trips: any[]) => void;
+  activeTab?: '3pl' | 'self';
 }
 
-export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: CreateDeliveryRoutePageProps) {
+export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, activeTab = '3pl' }: CreateDeliveryRoutePageProps) {
   const [deliveryDate, setDeliveryDate] = useState('2026-02-20');
   const [selectedOrderDates, setSelectedOrderDates] = useState<string[]>(['7-1-2025']);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
@@ -56,6 +58,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: C
       invoiceValue: 9675.36,
       totalWeight: 26.00,
       totalVolWeight: 30.39,
+      deliveryType: '3PL',
     },
     {
       id: '2',
@@ -67,6 +70,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: C
       invoiceValue: 3528.33,
       totalWeight: 2.52,
       totalVolWeight: 2.52,
+      deliveryType: '3PL',
     },
     {
       id: '3',
@@ -78,6 +82,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: C
       invoiceValue: 5154.57,
       totalWeight: 13.68,
       totalVolWeight: 16.64,
+      deliveryType: '3PL',
     },
     {
       id: '4',
@@ -89,6 +94,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: C
       invoiceValue: 5154.57,
       totalWeight: 13.68,
       totalVolWeight: 16.64,
+      deliveryType: '3PL',
     },
     {
       id: '5',
@@ -100,6 +106,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: C
       invoiceValue: 3728.33,
       totalWeight: 7.52,
       totalVolWeight: 7.52,
+      deliveryType: 'Self',
     },
     {
       id: '6',
@@ -111,6 +118,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: C
       invoiceValue: 3728.33,
       totalWeight: 7.52,
       totalVolWeight: 7.52,
+      deliveryType: 'Self',
     },
     {
       id: '7',
@@ -122,6 +130,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: C
       invoiceValue: 792.45,
       totalWeight: 4.80,
       totalVolWeight: 6.23,
+      deliveryType: 'Self',
     },
     {
       id: '8',
@@ -133,8 +142,13 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: C
       invoiceValue: 792.45,
       totalWeight: 4.80,
       totalVolWeight: 6.23,
+      deliveryType: 'Self',
     },
   ];
+
+  const filteredOrders = allOrders.filter(o =>
+    activeTab === '3pl' ? o.deliveryType === '3PL' : o.deliveryType === 'Self'
+  );
 
   const handleOrderDateToggle = (date: string) => {
     setSelectedOrderDates(prev =>
@@ -153,7 +167,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: C
       const next = prev.includes(orderId)
         ? prev.filter(id => id !== orderId)
         : [...prev, orderId];
-      setSelectAll(next.length === allOrders.length);
+      setSelectAll(next.length === filteredOrders.length);
       return next;
     });
   };
@@ -162,12 +176,12 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: C
     if (selectAll) {
       setSelectedOrderIds([]);
     } else {
-      setSelectedOrderIds(allOrders.map(order => order.id));
+      setSelectedOrderIds(filteredOrders.map(order => order.id));
     }
     setSelectAll(!selectAll);
   };
 
-  const selectedOrders = allOrders.filter(order => selectedOrderIds.includes(order.id));
+  const selectedOrders = filteredOrders.filter(order => selectedOrderIds.includes(order.id));
   const totalInvoiceValue = selectedOrders.reduce((sum, order) => sum + order.invoiceValue, 0);
   const totalVolWeight = selectedOrders.reduce((sum, order) => sum + order.totalVolWeight, 0);
 
@@ -293,7 +307,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: C
                 Available Orders
               </span>
               <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                {allOrders.length} orders
+                {filteredOrders.length} orders
               </span>
               {selectedOrderIds.length > 0 && (
                 <span className="text-xs text-[#2D6EF5] bg-blue-50 px-2 py-0.5 rounded-full font-medium">
@@ -366,7 +380,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated }: C
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
-                {allOrders.map((order) => (
+                {filteredOrders.map((order) => (
                   <tr
                     key={order.id}
                     onClick={() => handleOrderSelection(order.id)}
