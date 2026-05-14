@@ -59,9 +59,9 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
     return Array.from(dates);
   }, [allOrders]);
 
-  const filteredOrders = useMemo(() => allOrders.filter(o =>
-    activeTab === '3pl' ? o.deliveryType === '3PL' : o.deliveryType === 'Self'
-  ), [allOrders, activeTab]);
+  const filteredOrders = useMemo(() =>
+    activeTab === '3pl' ? allOrders : allOrders.filter(o => o.deliveryType === 'Self')
+  , [allOrders, activeTab]);
 
   const handleOrderDateToggle = (date: string) => {
     setSelectedOrderDates(prev =>
