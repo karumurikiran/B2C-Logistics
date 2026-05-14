@@ -353,6 +353,7 @@ export function OrdersPage({
         open={showMapView}
         orders={kpiFilteredOrders as Order[]}
         onClose={() => setShowMapView(false)}
+        onMarkDelivered={(ids) => ids.forEach(id => updateOrderStatus(id, 'Delivered'))}
       />
     </div>
   );

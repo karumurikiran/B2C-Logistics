@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
 import { divIcon } from 'leaflet';
-import { X, MapPin, Package, IndianRupee, WifiOff } from 'lucide-react';
+import { X, MapPin, Package, IndianRupee, WifiOff, CheckCircle2 } from 'lucide-react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { Order } from './OrdersTable';
 
@@ -9,6 +9,7 @@ interface OrdersMapViewProps {
   open: boolean;
   orders: Order[];
   onClose: () => void;
+  onMarkDelivered?: (orderIds: string[]) => void;
 }
 
 function PinIcon({ count, offline }: { count: number; offline?: boolean }) {
@@ -30,7 +31,7 @@ function PinIcon({ count, offline }: { count: number; offline?: boolean }) {
   );
 }
 
-export function OrdersMapView({ open, orders, onClose }: OrdersMapViewProps) {
+export function OrdersMapView({ open, orders, onClose, onMarkDelivered }: OrdersMapViewProps) {
   const [offlineKeys, setOfflineKeys] = useState<Set<string>>(new Set());
 
   const locationGroups = useMemo(() => {
@@ -228,29 +229,41 @@ export function OrdersMapView({ open, orders, onClose }: OrdersMapViewProps) {
                             <span className="font-semibold text-gray-900">₹{groupOrders.reduce((s, o) => s + (o.invoiceValue || 0), 0).toLocaleString('en-IN')}</span>
                           </div>
                         )}
-                        {/* Mark as Offline / Online button */}
-                        <button
-                          onClick={() => toggleOffline(key)}
-                          style={{
-                            marginTop: '10px',
-                            width: '100%',
-                            padding: '6px 10px',
-                            borderRadius: '6px',
-                            border: isOffline ? '1px solid #2D6EF5' : '1px solid #F97316',
-                            background: isOffline ? '#EFF6FF' : '#FFF7ED',
-                            color: isOffline ? '#2D6EF5' : '#F97316',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                          }}
-                        >
-                          <WifiOff style={{ width: 12, height: 12 }} />
-                          {isOffline ? 'Mark as Online Order' : 'Mark as Offline Order'}
-                        </button>
+                        {/* Step 1: Mark as Offline */}
+                        {!isOffline && (
+                          <button
+                            onClick={() => toggleOffline(key)}
+                            style={{
+                              marginTop: '10px', width: '100%', padding: '6px 10px',
+                              borderRadius: '6px', border: '1px solid #F97316',
+                              background: '#FFF7ED', color: '#F97316',
+                              fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                            }}
+                          >
+                            <WifiOff style={{ width: 12, height: 12 }} />
+                            Mark as Offline Order
+                          </button>
+                        )}
+                        {/* Step 2: Mark as Delivered (shown after marking offline) */}
+                        {isOffline && (
+                          <button
+                            onClick={() => {
+                              onMarkDelivered?.(groupOrders.map(o => o.id));
+                              toggleOffline(key);
+                            }}
+                            style={{
+                              marginTop: '10px', width: '100%', padding: '6px 10px',
+                              borderRadius: '6px', border: '1px solid #16a34a',
+                              background: '#f0fdf4', color: '#16a34a',
+                              fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                            }}
+                          >
+                            <CheckCircle2 style={{ width: 12, height: 12 }} />
+                            Mark as Delivered
+                          </button>
+                        )}
                       </div>
                     </Popup>
                   </Marker>
