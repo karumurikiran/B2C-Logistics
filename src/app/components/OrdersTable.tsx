@@ -102,6 +102,8 @@ export function OrdersTable({ orders, onDeleteOrder, selectedOrderId, onSelectOr
         return 'bg-[#F3F4F6] text-[#374151] hover:bg-[#F3F4F6]';
       case 'discarded':
         return 'bg-[#FEE2E2] text-[#991B1B] hover:bg-[#FEE2E2]';
+      case 'offline order':
+        return 'bg-[#FFF7ED] text-[#C2410C] hover:bg-[#FFF7ED]';
       default:
         return 'bg-gray-100 text-gray-700 hover:bg-gray-100';
     }

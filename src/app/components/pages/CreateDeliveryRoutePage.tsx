@@ -1,8 +1,9 @@
 import { ArrowLeft, Calendar, Store, User, MapPin, Hash, IndianRupee, Weight, Package, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { OptimizedRoutesModal } from '../OptimizedRoutesModal';
+import { useData } from '../../context/DataContext';
 
 interface Order {
   id: string;
@@ -25,130 +26,42 @@ interface CreateDeliveryRoutePageProps {
 }
 
 export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, activeTab = '3pl' }: CreateDeliveryRoutePageProps) {
+  const { orders: contextOrders } = useData();
   const [deliveryDate, setDeliveryDate] = useState('2026-02-20');
   const [selectedOrderDates, setSelectedOrderDates] = useState<string[]>(['7-1-2025']);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [showOptimizedModal, setShowOptimizedModal] = useState(false);
 
-  // Available order dates
-  const orderDates = [
-    '7-1-2025',
-    '17-2-2025',
-    '20-2-2025',
-    '26-7-2025',
-    '14-8-2025',
-    '2-11-2025',
-    '8-12-2025',
-    '12-12-2025',
-    '28-12-2025',
-    '18-2-2026',
-    '2-7-2026',
-  ];
+  // Map DataContext orders to local Order format, excluding Offline Orders
+  const allOrders: Order[] = useMemo(() => contextOrders
+    .filter(o => o.status !== 'Offline Order')
+    .map(o => ({
+      id: o.id,
+      orderDate: o.orderDate,
+      retailerName: o.retailerName,
+      salesPerson: o.salesPerson || 'N/A',
+      beatName: o.beatName || 'N/A',
+      refOrderNumber: o.invoiceNumber,
+      invoiceValue: o.invoiceValue || 0,
+      totalWeight: o.volumetricWeight || 0,
+      totalVolWeight: o.volumetricWeight || 0,
+      deliveryType: (o.deliveryType || 'Self') as '3PL' | 'Self',
+    })), [contextOrders]);
 
-  // Sample orders data
-  const allOrders: Order[] = [
-    {
-      id: '1',
-      orderDate: '02-07-2026',
-      retailerName: 'ROHIT DEPARTMENTAL STORE',
-      salesPerson: 'John Doe',
-      beatName: 'Beat 1',
-      refOrderNumber: '2026/FEB/002...',
-      invoiceValue: 9675.36,
-      totalWeight: 26.00,
-      totalVolWeight: 30.39,
-      deliveryType: '3PL',
-    },
-    {
-      id: '2',
-      orderDate: '18-02-2026',
-      retailerName: 'SHARMA GENERAL STORE',
-      salesPerson: 'John Doe',
-      beatName: 'Beat 1',
-      refOrderNumber: 'IOW/25-26/0021692/3',
-      invoiceValue: 3528.33,
-      totalWeight: 2.52,
-      totalVolWeight: 2.52,
-      deliveryType: '3PL',
-    },
-    {
-      id: '3',
-      orderDate: '07-01-2025',
-      retailerName: 'ROHIT DEPARTMENTAL STORE',
-      salesPerson: 'N/A',
-      beatName: 'N/A',
-      refOrderNumber: 'I07-01002121',
-      invoiceValue: 5154.57,
-      totalWeight: 13.68,
-      totalVolWeight: 16.64,
-      deliveryType: '3PL',
-    },
-    {
-      id: '4',
-      orderDate: '07-01-2025',
-      retailerName: 'SHARMA GENERAL STORE',
-      salesPerson: 'N/A',
-      beatName: 'N/A',
-      refOrderNumber: 'I07-01002',
-      invoiceValue: 5154.57,
-      totalWeight: 13.68,
-      totalVolWeight: 16.64,
-      deliveryType: '3PL',
-    },
-    {
-      id: '5',
-      orderDate: '07-01-2025',
-      retailerName: 'ROHIT DEPARTMENTAL STORE',
-      salesPerson: 'Hema',
-      beatName: 'Beat 1',
-      refOrderNumber: 'I07-01002111',
-      invoiceValue: 3728.33,
-      totalWeight: 7.52,
-      totalVolWeight: 7.52,
-      deliveryType: 'Self',
-    },
-    {
-      id: '6',
-      orderDate: '07-01-2025',
-      retailerName: 'SHARMA GENERAL STORE',
-      salesPerson: 'Hema',
-      beatName: 'Beat 1',
-      refOrderNumber: 'I07-01001',
-      invoiceValue: 3728.33,
-      totalWeight: 7.52,
-      totalVolWeight: 7.52,
-      deliveryType: 'Self',
-    },
-    {
-      id: '7',
-      orderDate: '07-01-2025',
-      retailerName: 'ROHIT DEPARTMENTAL STORE',
-      salesPerson: 'Vijay',
-      beatName: 'Hema',
-      refOrderNumber: 'I07-01003',
-      invoiceValue: 792.45,
-      totalWeight: 4.80,
-      totalVolWeight: 6.23,
-      deliveryType: 'Self',
-    },
-    {
-      id: '8',
-      orderDate: '07-01-2025',
-      retailerName: 'SHARMA GENERAL STORE',
-      salesPerson: 'Vijay',
-      beatName: 'Hema',
-      refOrderNumber: 'I07-01002131',
-      invoiceValue: 792.45,
-      totalWeight: 4.80,
-      totalVolWeight: 6.23,
-      deliveryType: 'Self',
-    },
-  ];
+  // Available order dates derived from actual orders
+  const orderDates = useMemo(() => {
+    const dates = new Set(allOrders.map(o => {
+      const parts = o.orderDate.split('/');
+      if (parts.length === 3) return `${parseInt(parts[0])}-${parseInt(parts[1])}-${parseInt(parts[2])}`;
+      return o.orderDate;
+    }));
+    return Array.from(dates);
+  }, [allOrders]);
 
-  const filteredOrders = allOrders.filter(o =>
+  const filteredOrders = useMemo(() => allOrders.filter(o =>
     activeTab === '3pl' ? o.deliveryType === '3PL' : o.deliveryType === 'Self'
-  );
+  ), [allOrders, activeTab]);
 
   const handleOrderDateToggle = (date: string) => {
     setSelectedOrderDates(prev =>

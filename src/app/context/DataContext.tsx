@@ -24,7 +24,7 @@ export interface Order {
   salesPerson: string;
   beatName: string;
   mobileNumber: string;
-  status: 'Ready for Planning' | 'In Planning' | 'Trip Assigned' | 'In Transit' | 'Delivered' | 'Partial Return' | 'Returned' | 'Cancelled' | 'Discarded';
+  status: 'Ready for Planning' | 'In Planning' | 'Trip Assigned' | 'In Transit' | 'Delivered' | 'Partial Return' | 'Returned' | 'Cancelled' | 'Discarded' | 'Offline Order';
   tripNumber: string;
   latitude?: number;
   longitude?: number;

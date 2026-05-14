@@ -9,6 +9,7 @@ interface OrdersMapViewProps {
   open: boolean;
   orders: Order[];
   onClose: () => void;
+  onMarkOffline?: (orderIds: string[]) => void;
   onMarkDelivered?: (orderIds: string[]) => void;
 }
 
@@ -31,7 +32,7 @@ function PinIcon({ count, offline }: { count: number; offline?: boolean }) {
   );
 }
 
-export function OrdersMapView({ open, orders, onClose, onMarkDelivered }: OrdersMapViewProps) {
+export function OrdersMapView({ open, orders, onClose, onMarkOffline, onMarkDelivered }: OrdersMapViewProps) {
   const [offlineKeys, setOfflineKeys] = useState<Set<string>>(new Set());
 
   const locationGroups = useMemo(() => {
@@ -232,7 +233,10 @@ export function OrdersMapView({ open, orders, onClose, onMarkDelivered }: Orders
                         {/* Step 1: Mark as Offline */}
                         {!isOffline && (
                           <button
-                            onClick={() => toggleOffline(key)}
+                            onClick={() => {
+                              toggleOffline(key);
+                              onMarkOffline?.(groupOrders.map(o => o.id));
+                            }}
                             style={{
                               marginTop: '10px', width: '100%', padding: '6px 10px',
                               borderRadius: '6px', border: '1px solid #F97316',
