@@ -279,7 +279,7 @@ export function OrdersMapView({ open, orders, onClose, onMarkOffline, onRevertOf
                               {/* Undo icon — hover to revert */}
                               <button
                                 title="Revert to previous status"
-                                onMouseEnter={() => {
+                                onClick={() => {
                                   onRevertOffline?.(groupOrders.map(o => o.id));
                                   toggleOffline(key);
                                 }}
