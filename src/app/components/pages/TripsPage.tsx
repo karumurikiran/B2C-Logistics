@@ -81,23 +81,23 @@ const mockTrips: Trip[] = [
   {
     id: '6',
     tripNumber: 'Q-20260213221811-GDMY',
-    provider: 'Qwiqo Logistics',
-    sla: 'Next Day Delivery',
+    provider: 'Blue Dart',
+    sla: 'Same Day Delivery',
     status: 'Completed',
     dropPoints: 18,
     arrivalTime: '2026-02-14 11:08 AM',
-    charges: '₹ 2,300.00',
+    charges: '₹ 3,100.00',
     deliveryType: '3pl',
   },
   {
     id: '7',
     tripNumber: 'Q-20260212201413-VNYO',
-    provider: 'Qwiqo Logistics',
-    sla: 'Next Day Delivery',
+    provider: 'DTDC Courier',
+    sla: 'Standard Delivery',
     status: 'Completed',
     dropPoints: 15,
     arrivalTime: '2026-02-13 11:40 AM',
-    charges: '₹ 2,300.00',
+    charges: '₹ 1,850.00',
     deliveryType: '3pl',
   },
   {
@@ -136,8 +136,16 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
   const [filterPickupDate, setFilterPickupDate] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [filterProvider, setFilterProvider] = useState('All');
   const [appliedPickupDate, setAppliedPickupDate] = useState('');
   const [appliedStatus, setAppliedStatus] = useState('All');
+  const [appliedProvider, setAppliedProvider] = useState('All');
+
+  // Unique provider names from all trips
+  const providerNames = React.useMemo(() => {
+    const names = Array.from(new Set(trips.map(t => t.provider).filter(Boolean)));
+    return names.sort();
+  }, [trips]);
 
   // Selection state
   const [selectedTripIds, setSelectedTripIds] = useState<Set<string>>(new Set());
@@ -145,25 +153,20 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
   // Apply filters to trips
   const filteredTrips = trips.filter(trip => {
     // Status filter
-    if (appliedStatus !== 'All' && trip.status !== appliedStatus) {
-      return false;
-    }
-    
+    if (appliedStatus !== 'All' && trip.status !== appliedStatus) return false;
+
+    // Provider filter
+    if (appliedProvider !== 'All' && trip.provider !== appliedProvider) return false;
+
     // Pickup date filter
     if (appliedPickupDate) {
-      // Parse the arrival time to get the date
       const tripDate = new Date(trip.arrivalTime);
       const filterDate = new Date(appliedPickupDate);
-      
-      // Compare only the date part (ignore time)
       const tripDateOnly = new Date(tripDate.getFullYear(), tripDate.getMonth(), tripDate.getDate());
       const filterDateOnly = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate());
-      
-      if (tripDateOnly.getTime() !== filterDateOnly.getTime()) {
-        return false;
-      }
+      if (tripDateOnly.getTime() !== filterDateOnly.getTime()) return false;
     }
-    
+
     return true;
   });
 
@@ -710,17 +713,22 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
         onClose={() => setIsFilterDialogOpen(false)}
         pickupDate={filterPickupDate}
         status={filterStatus}
+        providerName={filterProvider}
+        providerNames={providerNames}
         onPickupDateChange={setFilterPickupDate}
         onStatusChange={setFilterStatus}
+        onProviderNameChange={setFilterProvider}
         onClearAll={() => {
           setFilterPickupDate('');
           setFilterStatus('All');
+          setFilterProvider('All');
         }}
         onApplyFilters={() => {
           setAppliedPickupDate(filterPickupDate);
           setAppliedStatus(filterStatus);
+          setAppliedProvider(filterProvider);
           setIsFilterDialogOpen(false);
-          setCurrentPage(1); // Reset to first page when filters change
+          setCurrentPage(1);
         }}
       />
     </div>

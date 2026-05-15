@@ -13,8 +13,11 @@ interface TripFiltersDialogProps {
   onClose: () => void;
   pickupDate: string;
   status: string;
+  providerName: string;
+  providerNames: string[];
   onPickupDateChange: (date: string) => void;
   onStatusChange: (status: string) => void;
+  onProviderNameChange: (provider: string) => void;
   onClearAll: () => void;
   onApplyFilters: () => void;
 }
@@ -24,8 +27,11 @@ export function TripFiltersDialog({
   onClose,
   pickupDate,
   status,
+  providerName,
+  providerNames,
   onPickupDateChange,
   onStatusChange,
+  onProviderNameChange,
   onClearAll,
   onApplyFilters,
 }: TripFiltersDialogProps) {
@@ -45,9 +51,9 @@ export function TripFiltersDialog({
           </button>
         </div>
 
-        {/* Content - Two Column Layout */}
+        {/* Content - Three Column Layout */}
         <div className="px-8 py-8">
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-3 gap-6">
             {/* Pickup Date */}
             <div className="space-y-3">
               <label className="text-base font-semibold text-gray-900 block">
@@ -79,6 +85,24 @@ export function TripFiltersDialog({
                   <SelectItem value="In Progress">In Progress</SelectItem>
                   <SelectItem value="Completed">Completed</SelectItem>
                   <SelectItem value="Cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Provider Name */}
+            <div className="space-y-3">
+              <label className="text-base font-semibold text-gray-900 block">
+                Provider Name
+              </label>
+              <Select value={providerName} onValueChange={onProviderNameChange}>
+                <SelectTrigger className="w-full h-12 border-gray-300 rounded-lg">
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All</SelectItem>
+                  {providerNames.map(name => (
+                    <SelectItem key={name} value={name}>{name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
