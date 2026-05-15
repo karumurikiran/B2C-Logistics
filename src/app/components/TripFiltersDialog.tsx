@@ -51,9 +51,9 @@ export function TripFiltersDialog({
           </button>
         </div>
 
-        {/* Content - Three Column Layout */}
+        {/* Content - 2x2 Grid Layout */}
         <div className="px-8 py-8">
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 gap-6">
             {/* Pickup Date */}
             <div className="space-y-3">
               <label className="text-base font-semibold text-gray-900 block">
